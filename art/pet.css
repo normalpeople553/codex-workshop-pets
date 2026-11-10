@@ -1,28 +1,24 @@
-#codex-workshop { position:fixed; z-index:35; height:117px; display:flex;
-  align-items:flex-end; justify-content:flex-start; pointer-events:none;
-  font:600 10px ui-monospace,monospace; user-select:none; isolation:isolate; }
-#codex-workshop[data-overflow] { overflow-x:auto; pointer-events:auto; scrollbar-width:thin; }
+#codex-workshop { position:fixed; z-index:35; height:94px; display:flex;
+  align-items:flex-end; pointer-events:none; isolation:isolate; }
 #codex-workshop[hidden] { display:none; }
-#codex-workshop .workshop-pet { position:relative; display:flex; flex:1 0 0;
-  flex-direction:column; align-items:center; justify-content:flex-end; gap:0;
-  min-width:82px; max-width:148px; height:117px; padding:0; border:0;
-  color:inherit; background:none; font:inherit; cursor:pointer; pointer-events:auto; }
+#codex-workshop .workshop-pet { display:flex; flex:1 1 0; min-width:0; height:94px;
+  align-items:flex-end; justify-content:center; padding:0; border:0;
+  background:none; cursor:pointer; pointer-events:auto; }
+#codex-workshop .workshop-pet:disabled { pointer-events:none; cursor:default; }
 #codex-workshop .workshop-pet:focus-visible { outline:2px solid #a38aee; border-radius:14px; }
-#codex-workshop .workshop-pet:hover .readout { border-color:#c7b8ff; }
-#codex-workshop .workshop-pet svg { display:block; width:100%; height:94px; overflow:visible;
-  filter:drop-shadow(0 3px 4px #21184a38) hue-rotate(var(--pet-hue,0deg)); }
-#codex-workshop .pet-number { position:absolute; right:9%; bottom:20px;
-  border-radius:9px; min-width:15px; line-height:15px; padding:0 3px;
-  color:#fff; background:#544182; text-align:center; }
-#codex-workshop .pet-number[hidden] { display:none; }
-#codex-workshop .readout { display:flex; gap:6px; align-items:center; margin:0 auto;
-  width:max-content; padding:3px 8px; color:#f6f1ff; background:#292142;
-  border:1px solid #8d78c5; border-radius:12px; letter-spacing:.06em; }
-#codex-workshop .readout b { width:5px; height:5px; border-radius:50%; background:#cbb9f7; }
+#codex-workshop .workshop-pet svg { display:block; width:min(100%,148px); height:94px;
+  overflow:visible; filter:drop-shadow(0 3px 4px #21184a38) hue-rotate(var(--pet-hue,0deg)); }
 #codex-workshop .pet-body { transform-origin:74px 62px; }
 #codex-workshop .tail { transform-origin:48px 60px; animation:workshop-tail 2.3s ease-in-out infinite; }
 #codex-workshop .paw { transform-box:fill-box; transform-origin:center top; }
-#codex-workshop .effort, #codex-workshop .rest-face, #codex-workshop .relief { opacity:0; }
+#codex-workshop .effort, #codex-workshop .rest-face, #codex-workshop .relief,
+#codex-workshop .idle-face { opacity:0; }
+#codex-workshop .workshop-pet[data-state="idle"] .idle-face {
+  opacity:1; transform-origin:74px 47px; animation:workshop-idle-blink 4.4s infinite var(--pet-delay,0s); }
+#codex-workshop .workshop-pet[data-state="idle"] .pet-body {
+  animation:workshop-idle-breathe 2.8s ease-in-out infinite var(--pet-delay,0s); }
+@keyframes workshop-idle-blink { 0%,92%,98%,100% { transform:scaleY(1); } 95% { transform:scaleY(.13); } }
+@keyframes workshop-idle-breathe { 50% { transform:translateY(1px) scale(1.025,.96); } }
 #codex-workshop .workshop-pet[data-state="coding"] .pet-body {
   transform:translate(2px,4px) rotate(8deg);
   animation:workshop-hustle .31s ease-in-out infinite; }
@@ -43,12 +39,8 @@
   transform-box:fill-box; transform-origin:center; animation:workshop-keycap .56s ease-out infinite; }
 #codex-workshop .workshop-pet[data-state="coding"] .steam { animation:workshop-steam .81s ease-out infinite; }
 #codex-workshop .workshop-pet[data-state="coding"] .alarm { animation:workshop-dash .45s ease-in-out infinite; }
-#codex-workshop .workshop-pet[data-state="coding"] .readout {
-  color:#ffe2b2; background:#4d2831; border-color:#f59464; }
-#codex-workshop .workshop-pet[data-state="coding"] .readout b { background:#ffad6e; box-shadow:0 0 7px #ff9867; }
 #codex-workshop .workshop-pet[data-state="done"] .pet-body { animation:workshop-sigh .7s ease-out both; }
 #codex-workshop .workshop-pet[data-state="done"] .relief { animation:workshop-relief 1.3s ease-out both; }
-#codex-workshop .workshop-pet[data-state="done"] .readout b { background:#b9ff8a; }
 @keyframes workshop-tail { 0%,100% { transform:rotate(-16deg); } 50% { transform:rotate(20deg); } }
 @keyframes workshop-hustle {
   0%,100% { transform:translate(-1px,1px) rotate(2deg) scale(1.03,.99); }

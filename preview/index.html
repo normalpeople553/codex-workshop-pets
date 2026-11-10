@@ -17,11 +17,12 @@
 </style>
 <main>
   <h1>给宠物试个动作</h1>
-  <p>选一个状态。修改 SVG 或 CSS 后刷新页面，就能看见新的形象。</p>
+  <p>给宠物派个活儿，看看最右边的空闲宠物怎么接单。修改 SVG 或 CSS 后刷新页面，即可预览新形象。</p>
   <nav aria-label="动画预览">
-    <button type="button" data-preview="coding" aria-pressed="true">疯狂干活儿</button>
-    <button type="button" data-preview="done" aria-pressed="false">干完了</button>
-    <button type="button" data-preview="queue" aria-pressed="false">两只并排</button>
+    <button type="button" data-preview="idle" aria-pressed="true">全员待机</button>
+    <button type="button" data-preview="coding" aria-pressed="false">来一个任务</button>
+    <button type="button" data-preview="done" aria-pressed="false">任务完成</button>
+    <button type="button" data-preview="queue" aria-pressed="false">来两个任务</button>
   </nav>
   <div class="composer-surface-chrome" aria-label="模拟 Codex 输入框">Codex 输入框的位置预览</div>
 </main>
@@ -29,7 +30,9 @@
 <script>
   const buttons = [...document.querySelectorAll("[data-preview]")];
   function show(state) {
-    const states = state === "queue" ? ["coding", "done"] : [state];
+    const first = { id: "preview-0", title: "示例任务", state: "coding" };
+    if (state === "done") window.codexWorkshop.render([first]);
+    const states = state === "queue" ? ["coding", "coding"] : state === "idle" ? [] : [state];
     window.codexWorkshop.render(states.map((value, index) => ({
       id: `preview-${index}`, title: `示例任务 ${index + 1}`, state: value
     })));
@@ -40,6 +43,6 @@
       show(button.dataset.preview);
     });
   }
-  show("coding");
+  show("idle");
 </script>
 </html>

@@ -21,6 +21,10 @@
     <rect x="52" y="36" width="44" height="28" rx="12" fill="#322751" stroke="#7563ae"/>
     <path d="m68 56 3 2-3 2m7 0h5" fill="none" stroke="#d9c9ff"
       stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
+    <g class="idle-face" fill="#f8f1ff">
+      <ellipse cx="64" cy="47" rx="2.8" ry="4.2"/>
+      <ellipse cx="84" cy="47" rx="2.8" ry="4.2"/>
+    </g>
     <g class="effort">
       <path class="wild-hair" d="m57 27-4-9 11 4 5-12 6 11 10-8-1 10 8-2-3 9"
         fill="#c6b5ff" stroke="#6754b7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
