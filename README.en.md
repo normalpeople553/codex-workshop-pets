@@ -2,9 +2,13 @@
 
 [简体中文](README.md) · **English**
 
-Add a row of tiny pets above the composer in Codex Desktop. The width of the composer determines how many pets fit. When a task starts, the leftmost free pet gets spiral eyes and starts hammering its keyboard. When the task finishes, the pet closes its eyes, takes a breath, and settles back into place. Once all slots are busy, extra tasks are skipped. Each working pet shares a colored shape with its chat. Hover over a pet to highlight the matching chat in the sidebar, or click it to jump there.
+After I give Codex a task, I often catch myself staring at the little spinner in the chat list. It spins and spins, the screen barely changes, and I start wondering what’s taking so long. Meanwhile, Codex might be reading files, editing code, or running tests. The spinner gives me no sense of how busy it is.
+
+So I put a row of tiny workstations above the composer. As soon as Codex gets to work, a pet dives for the keyboard and types so hard its fur stands on end, sweat flies, and keycaps pop off. When the task is done, it finally takes its paws off the keys, closes its eyes, and lets out a breath.
 
 ![Pets pick up tasks from left to right and settle back into place when finished](media/pet-preview.gif)
+
+The width of the composer determines how many pets fit. New tasks go to the leftmost free pet, and extra tasks are skipped when all slots are busy. Each working pet shares a colored shape with its chat. Hover over the pet to highlight its chat in the sidebar, or click it to jump there.
 
 ## Use it in Codex
 
