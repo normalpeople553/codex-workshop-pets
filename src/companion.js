@@ -15,7 +15,7 @@ function mountWorkshopPets(css, artwork) {
   `;
   document.head.append(style);
   document.body.append(panel);
-  const labels = { idle: "等开工", thinking: "想办法中", coding: "正在改文件", done: "改完了" };
+  const labels = { coding: "疯狂干活儿", done: "干完了" };
   const pets = new Map();
   const clicks = [];
   const hues = [0, 45, -48, 105, -100, 170];
@@ -33,7 +33,7 @@ function mountWorkshopPets(css, artwork) {
     panel.style.left = `${left}px`;
     panel.style.width = `${width}px`;
     panel.style.top = `${Math.max(10, box.top - 115)}px`;
-    panel.toggleAttribute("data-overflow", width < pets.size * 64);
+    panel.toggleAttribute("data-overflow", width < pets.size * 82);
     return true;
   }
 
@@ -53,7 +53,7 @@ function mountWorkshopPets(css, artwork) {
         pet.append(template.content.cloneNode(true));
         const idMap = new Map([...pet.querySelectorAll("svg [id]")].map(element => {
           const original = element.id;
-          element.id = `${original}-${id || "idle"}`;
+          element.id = `${original}-${id}`;
           return [original, element.id];
         }));
         for (const element of pet.querySelectorAll("svg, svg *")) {
@@ -69,10 +69,9 @@ function mountWorkshopPets(css, artwork) {
         }
         pet.querySelector("svg").setAttribute("aria-hidden", "true");
         pet.addEventListener("click", () => clicks.push(id));
-        pet.disabled = !id;
         pets.set(id, pet);
       }
-      pet.dataset.state = Object.hasOwn(labels, state) ? state : "idle";
+      pet.dataset.state = state;
       const label = labels[pet.dataset.state];
       pet.title = `${title} · ${label}`;
       pet.setAttribute("aria-label", `打开 ${title}，${label}`);

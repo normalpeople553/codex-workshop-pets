@@ -21,11 +21,16 @@
     <rect x="52" y="36" width="44" height="28" rx="12" fill="#322751" stroke="#7563ae"/>
     <path d="m68 56 3 2-3 2m7 0h5" fill="none" stroke="#d9c9ff"
       stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
-    <g class="normal-face" fill="#f8f1ff">
-      <ellipse cx="64" cy="47" rx="2.7" ry="4"/><ellipse cx="84" cy="47" rx="2.7" ry="4"/>
-    </g>
-    <g class="effort" stroke="#fff5e4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
-      <path d="m61 44 6 4-6 2m26-6-6 4 6 2"/>
+    <g class="effort">
+      <path class="wild-hair" d="m57 27-4-9 11 4 5-12 6 11 10-8-1 10 8-2-3 9"
+        fill="#c6b5ff" stroke="#6754b7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <ellipse cx="63.5" cy="47" rx="7.3" ry="7.1" fill="#fff6ed"/>
+      <ellipse cx="85" cy="46" rx="8" ry="7.8" fill="#fff6ed"/>
+      <path class="spiral-eye" d="M59 47c0-5 8-5 8 0 0 3-5 4-5 0 0-1 2-2 3 0"
+        fill="none" stroke="#5c3887" stroke-width="1.25" stroke-linecap="round"/>
+      <path class="spiral-eye other" d="M80 46c0-6 10-6 10 0 0 4-6 4-6 0 0-2 3-2 3 0"
+        fill="none" stroke="#5c3887" stroke-width="1.35" stroke-linecap="round"/>
+      <path d="m56 40 5-3m25-1 6 3" fill="none" stroke="#ffd5ba" stroke-width="1.8" stroke-linecap="round"/>
     </g>
     <g class="rest-face" stroke="#f8f1ff" stroke-width="1.8" stroke-linecap="round" fill="none">
       <path d="M61 48q3-5 6 0m14 0q3-5 6 0"/>
@@ -42,15 +47,18 @@
   <ellipse class="paw left" cx="58" cy="71" rx="7.2" ry="5.5" fill="#dfcdff" stroke="#7762c4" stroke-width="1.5"/>
   <ellipse class="paw right" cx="89" cy="71" rx="7.2" ry="5.5" fill="#dfcdff" stroke="#7762c4" stroke-width="1.5"/>
   <g class="effort">
-    <path class="sweat" d="M110 33q-2 8 3 8 6-1 4-7l-2-5zm7 15q2-3 6-4l-1 6q-2 4-5 1z"
+    <path class="sweat" d="M108 32q-2 8 3 8 6-1 4-7l-2-5zm8 15q2-3 6-4l-1 6q-2 4-5 1zM31 35q-6 2-6 5 0 4 4 2z"
       fill="#71dff3" stroke="#3999bf" stroke-width="1"/>
-    <path class="speed-lines" d="M24 44h12m-15 7h9m-6 7h10m74-2h12m-10 6h8"
+    <path class="speed-lines" d="M18 45h17m-19 7h13m-10 7h15m74-3h18m-17 7h11"
       fill="none" stroke="#a894fa" stroke-width="2" stroke-linecap="round"/>
-    <path class="key-sparks" d="m48 64-5-4m58 4 5-5m-29 7v-4m-8 6-2-3"
-      fill="none" stroke="#edac36" stroke-width="2" stroke-linecap="round"/>
-  </g>
-  <g class="thinking" fill="#7e64d3">
-    <circle cx="106" cy="22" r="2.2"/><circle cx="114" cy="17" r="2.6"/><circle cx="123" cy="14" r="3"/>
+    <path class="key-sparks" d="m49 68-11-5 6-1-5-8m64 15 12-6-6-2 6-6m-36 11v-5m-9 7-3-4"
+      fill="none" stroke="#f29324" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path class="flying-key" d="M98 70h6v4h-6z" fill="#ffe0a5" stroke="#8d5425" stroke-width="1.25"/>
+    <g class="steam" fill="none" stroke="#ad94e7" stroke-width="2.1" stroke-linecap="round">
+      <path d="M106 23q8-2 5-7t5-7m6 16q5-3 2-6t3-5"/>
+    </g>
+    <path class="alarm" d="m25 21 6 8m2 3 .1.1m93-3 6-9m-8 12-.1.1"
+      fill="none" stroke="#f37d48" stroke-width="2.6" stroke-linecap="round"/>
   </g>
   <path class="relief" d="M105 37q8-3 12 0m-10 5q7-2 11 1"
     fill="none" stroke="#90a7f2" stroke-width="2" stroke-linecap="round"/>

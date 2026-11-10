@@ -6,12 +6,12 @@ import { promisify } from "node:util";
 import { threadPattern, trackActivity } from "./activity.mjs";
 import { rendererSource } from "./renderer-source.mjs";
 
-const [profile, sessions, initialThread] = process.argv.slice(2);
-if (!profile || !sessions || (initialThread && !threadPattern.test(initialThread))) {
-  throw new Error("Usage: node bridge.mjs PROFILE SESSIONS [INITIAL_THREAD]");
+const [profile, sessions] = process.argv.slice(2);
+if (!profile || !sessions) {
+  throw new Error("Usage: node bridge.mjs PROFILE SESSIONS");
 }
 const openApp = promisify(execFile);
-const activity = await trackActivity(sessions, initialThread);
+const activity = await trackActivity(sessions);
 const clients = new Map();
 let stopping = false;
 process.on("SIGINT", () => { stopping = true; });

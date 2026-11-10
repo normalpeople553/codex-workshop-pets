@@ -4,10 +4,8 @@ import { basename, dirname, join } from "node:path";
 
 export const threadPattern = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i;
 const rolloutPattern = /^rollout-[^_]+-([0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})\.jsonl$/i;
-const fileChange = new Set(["FileChange", "file_change"]);
-const patchCall = /\btools\s*\.\s*apply_patch\s*\(/;
 const activeTimeout = 15 * 60_000;
-const minimumAnimation = 1800;
+const doneDuration = 10_000;
 
 function consume(chat, { type, payload, timestamp }) {
   if (!payload) return;
@@ -19,41 +17,16 @@ function consume(chat, { type, payload, timestamp }) {
   const time = Date.parse(timestamp);
   if (!Number.isFinite(time)) return;
   chat.updated = time;
-  const observed = Date.now();
-  const animationTime = observed - time < 10_000 ? observed : time;
-  if (type === "event_msg") {
-    if (payload.type === "task_started") {
-      chat.started = time;
-      chat.running = true;
-      chat.doneUntil = 0;
-      chat.finished = 0;
-    }
-    if (["task_complete", "turn_aborted"].includes(payload.type)) {
-      chat.running = false;
-      chat.pending = null;
-      chat.finished = time;
-    }
-    if (!fileChange.has(payload.item?.type)) return;
-    if (payload.type === "item_started") {
-      chat.pending = { id: payload.item.id, expires: time + 30_000 };
-      chat.editingUntil = animationTime + minimumAnimation;
-    }
-    if (payload.type === "item_completed") {
-      chat.pending = null;
-      if (payload.item.status === "completed") {
-        chat.editingUntil = Math.max(chat.editingUntil, animationTime + minimumAnimation);
-        chat.doneUntil = chat.editingUntil + 2200;
-      }
-    }
+  if (type !== "event_msg") return;
+
+  if (payload.type === "task_started") {
+    chat.started = time;
+    chat.running = true;
+    chat.finished = 0;
+  } else if (payload.type === "task_complete" || payload.type === "turn_aborted") {
+    chat.running = false;
+    chat.finished = payload.type === "task_complete" ? time : 0;
   }
-  if (type !== "response_item") return;
-  const { name, call_id: id, input } = payload;
-  if (["function_call", "custom_tool_call"].includes(payload.type) &&
-      (name === "apply_patch" || (name === "exec" && patchCall.test(input ?? "")))) {
-    chat.pending = { id, expires: time + 30_000 };
-    chat.editingUntil = animationTime + minimumAnimation;
-  }
-  if (payload.type.endsWith("_output") && chat.pending?.id === id) chat.pending = null;
 }
 
 async function tail(file, chat) {
@@ -81,7 +54,7 @@ async function tail(file, chat) {
   }
 }
 
-export async function trackActivity(sessions, initialThread) {
+export async function trackActivity(sessions) {
   const chats = new Map();
   const dirty = new Set();
   const index = join(dirname(sessions), "session_index.jsonl");
@@ -137,8 +110,8 @@ export async function trackActivity(sessions, initialThread) {
       }
       if (now >= nextCatchUp) {
         nextCatchUp = now + 400;
-        for (const [id, chat] of chats) {
-          if (id === initialThread || chat.running) dirty.add(chat.file);
+        for (const chat of chats.values()) {
+          if (chat.running) dirty.add(chat.file);
         }
       }
       for (const file of [...dirty]) {
@@ -147,7 +120,7 @@ export async function trackActivity(sessions, initialThread) {
         let chat = chats.get(id);
         if (!chat || chat.file !== file) {
           chat = { file, offset: 0, partial: "", decoder: new TextDecoder(),
-            editingUntil: 0, doneUntil: 0, finished: 0 };
+            finished: 0 };
           chats.set(id, chat);
         }
         try {
@@ -161,16 +134,12 @@ export async function trackActivity(sessions, initialThread) {
       const active = [];
       for (const [id, chat] of chats) {
         if (!chat.desktop || renderedAt - chat.updated > activeTimeout) continue;
-        const editing = renderedAt < chat.editingUntil || renderedAt < chat.pending?.expires;
-        const state = editing ? "coding" : renderedAt < chat.doneUntil ? "done" :
-          chat.running ? "thinking" : renderedAt < chat.finished + 1700 ? "done" : null;
+        const state = chat.running ? "coding" : renderedAt < chat.finished + doneDuration ? "done" : null;
         if (state) active.push({ id, state, title: titles.get(id) || "Codex " + id.slice(-5),
           started: chat.started ?? chat.updated });
       }
       active.sort((left, right) => left.started - right.started || left.id.localeCompare(right.id));
-      return active.length ? active : [
-        { id: initialThread ?? "", state: "idle", title: titles.get(initialThread) || "Codex" }
-      ];
+      return active;
     },
     close() { watcher.close(); }
   };
