@@ -35,4 +35,4 @@ cd codex-workshop-pets
 
 启动器只在本机回环地址打开临时调试端口，用来把宠物画进窗口。桥接不改应用包，也不把聊天内容发到网络。预览页只加载仓库里的美术文件，使用示例状态。
 
-代码和随附素材按 [Apache-2.0](LICENSE) 分发。窗口内渲染参考了 [Codex Styler](https://github.com/xuhuanstudio/codex-styler)。这是非官方项目，与 OpenAI 无隶属关系。
+代码和随附素材按 [GNU GPL 第 3 版](LICENSE) 分发。对外分发修改版时，须按 GPL-3.0 向接收者提供对应源码。窗口内渲染参考了 [Codex Styler](https://github.com/xuhuanstudio/codex-styler)，上游许可和署名见 [NOTICE](NOTICE)。这是非官方项目，与 OpenAI 无隶属关系。

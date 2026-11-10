@@ -35,4 +35,4 @@ The bridge reads Codex Desktop chat events and titles locally. Each task takes a
 
 The launcher opens a temporary debug port on the loopback interface to draw the pets inside the window. The bridge leaves the app bundle intact and keeps chat content on your machine. The preview uses artwork from this repository and sample task states.
 
-The code and included assets are available under the [Apache License 2.0](LICENSE). In-window rendering was inspired by [Codex Styler](https://github.com/xuhuanstudio/codex-styler). This is an unofficial project and is not affiliated with OpenAI.
+The code and included assets are available under the [GNU General Public License, version 3](LICENSE). If you distribute a modified version, make the corresponding source available to recipients under GPL-3.0. In-window rendering was inspired by [Codex Styler](https://github.com/xuhuanstudio/codex-styler). See [NOTICE](NOTICE) for upstream attribution and licensing. This is an unofficial project and is not affiliated with OpenAI.

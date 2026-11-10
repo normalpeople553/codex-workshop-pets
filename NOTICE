@@ -1,8 +1,11 @@
 Codex Workshop Pets
 
+This project is distributed under GNU GPL version 3 only. See LICENSE.
+
 The composer anchoring approach and local DevTools integration were informed
 by Codex Styler (https://github.com/xuhuanstudio/codex-styler), Apache-2.0.
 Codex Styler copyright 2026 Codex Styler contributors.
+The Apache License 2.0 text is preserved in LICENSES/Apache-2.0.txt.
 
 The bundled purple pet is original SVG artwork. OpenAI and Codex are used
 to identify the application this unofficial project works with.
