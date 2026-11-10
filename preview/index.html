@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Codex Workshop Pets 形象预览</title>
+<style>
+  * { box-sizing:border-box }
+  body { background:#f5f0fb; color:#241b36; font:16px/1.55 system-ui,sans-serif; margin:0 }
+  main { width:min(760px,calc(100% - 32px)); margin:40px auto }
+  h1 { margin:0; font-size:clamp(24px,5vw,42px) }
+  p { color:#695a7d }
+  nav { display:flex; gap:8px; flex-wrap:wrap }
+  nav button { border:1px solid #c1acd9; border-radius:100px; padding:7px 13px; background:#fff; cursor:pointer }
+  nav button[aria-pressed="true"] { background:#503484; color:#fff }
+  .composer-surface-chrome { margin-top:136px; padding:20px; min-height:110px; border-radius:20px;
+    background:#fff; border:1px solid #ddcdea; color:#6e6181; }
+</style>
+<main>
+  <h1>给宠物试个动作</h1>
+  <p>选一个状态。修改 SVG 或 CSS 后刷新页面，就能看见新的形象。</p>
+  <nav aria-label="动画预览">
+    <button type="button" data-preview="idle" aria-pressed="true">待机</button>
+    <button type="button" data-preview="thinking" aria-pressed="false">思考</button>
+    <button type="button" data-preview="coding" aria-pressed="false">猛敲键盘</button>
+    <button type="button" data-preview="done" aria-pressed="false">松一口气</button>
+    <button type="button" data-preview="queue" aria-pressed="false">三只并排</button>
+  </nav>
+  <div class="composer-surface-chrome" aria-label="模拟 Codex 输入框">Codex 输入框的位置预览</div>
+</main>
+<script src="/pet.js"></script>
+<script>
+  const buttons = [...document.querySelectorAll("[data-preview]")];
+  function show(state) {
+    const states = state === "queue" ? ["coding", "thinking", "done"] : [state];
+    window.codexWorkshop.render(states.map((value, index) => ({
+      id: `preview-${index}`, title: `示例任务 ${index + 1}`, state: value
+    })));
+  }
+  for (const button of buttons) {
+    button.addEventListener("click", () => {
+      for (const item of buttons) item.setAttribute("aria-pressed", String(item === button));
+      show(button.dataset.preview);
+    });
+  }
+  show("idle");
+</script>
+</html>

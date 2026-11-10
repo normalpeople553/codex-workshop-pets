@@ -1,0 +1,57 @@
+<svg viewBox="0 0 148 94" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="workshop-shell" x2=".72" y2="1" gradientUnits="objectBoundingBox">
+      <stop stop-color="#ede2ff"/><stop offset=".48" stop-color="#a292fa"/>
+      <stop offset="1" stop-color="#6653c8"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="76" cy="83" rx="45" ry="5" fill="#493768" opacity=".24"/>
+  <path class="tail" d="M45 64c-13 0-18-8-11-14 2-2 1-5-2-6"
+    fill="none" stroke="#8874e0" stroke-width="7" stroke-linecap="round"/>
+  <g class="pet-body">
+    <ellipse cx="54" cy="72" rx="9" ry="5" fill="#7560ca"/>
+    <ellipse cx="92" cy="72" rx="9" ry="5" fill="#7560ca"/>
+    <path d="M48 37 44 18q0-4 5-3l15 11m33 11 4-19q0-4-5-3L81 26"
+      fill="#b6a0fb" stroke="#6a55bb" stroke-width="2" stroke-linejoin="round"/>
+    <path d="m48 21 3 12 7-6zm49 0-3 12-7-6z" fill="#f2bbef"/>
+    <path d="M46 44q0-20 26-21 30 0 31 21l3 13q0 18-32 18-33 0-32-18z"
+      fill="url(#workshop-shell)" stroke="#6754b7" stroke-width="2"/>
+    <path d="M53 34q9-8 25-7" fill="none" stroke="#f7edff" stroke-width="2"
+      stroke-linecap="round" opacity=".8"/>
+    <rect x="52" y="36" width="44" height="28" rx="12" fill="#322751" stroke="#7563ae"/>
+    <path d="m68 56 3 2-3 2m7 0h5" fill="none" stroke="#d9c9ff"
+      stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
+    <g class="normal-face" fill="#f8f1ff">
+      <ellipse cx="64" cy="47" rx="2.7" ry="4"/><ellipse cx="84" cy="47" rx="2.7" ry="4"/>
+    </g>
+    <g class="effort" stroke="#fff5e4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <path d="m61 44 6 4-6 2m26-6-6 4 6 2"/>
+    </g>
+    <g class="rest-face" stroke="#f8f1ff" stroke-width="1.8" stroke-linecap="round" fill="none">
+      <path d="M61 48q3-5 6 0m14 0q3-5 6 0"/>
+    </g>
+    <ellipse cx="59" cy="53" rx="2.8" ry="1.4" fill="#eca2d8"/>
+    <ellipse cx="89" cy="53" rx="2.8" ry="1.4" fill="#eca2d8"/>
+  </g>
+  <g class="keyboard">
+    <path d="M49 72h53l8 8q1 3-3 3H45q-4 0-2-3z"
+      fill="#493a72" stroke="#392e57" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M52 75h4m4 0h4m4 0h4m4 0h4m4 0h4m4 0h4m-44 4h8m4 0h24m4 0h8"
+      fill="none" stroke="#e1d3ff" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+  <ellipse class="paw left" cx="58" cy="71" rx="7.2" ry="5.5" fill="#dfcdff" stroke="#7762c4" stroke-width="1.5"/>
+  <ellipse class="paw right" cx="89" cy="71" rx="7.2" ry="5.5" fill="#dfcdff" stroke="#7762c4" stroke-width="1.5"/>
+  <g class="effort">
+    <path class="sweat" d="M110 33q-2 8 3 8 6-1 4-7l-2-5zm7 15q2-3 6-4l-1 6q-2 4-5 1z"
+      fill="#71dff3" stroke="#3999bf" stroke-width="1"/>
+    <path class="speed-lines" d="M24 44h12m-15 7h9m-6 7h10m74-2h12m-10 6h8"
+      fill="none" stroke="#a894fa" stroke-width="2" stroke-linecap="round"/>
+    <path class="key-sparks" d="m48 64-5-4m58 4 5-5m-29 7v-4m-8 6-2-3"
+      fill="none" stroke="#edac36" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  <g class="thinking" fill="#7e64d3">
+    <circle cx="106" cy="22" r="2.2"/><circle cx="114" cy="17" r="2.6"/><circle cx="123" cy="14" r="3"/>
+  </g>
+  <path class="relief" d="M105 37q8-3 12 0m-10 5q7-2 11 1"
+    fill="none" stroke="#90a7f2" stroke-width="2" stroke-linecap="round"/>
+</svg>

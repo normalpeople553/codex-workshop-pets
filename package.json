@@ -1,0 +1,10 @@
+{
+  "name": "codex-workshop-pets",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "preview": "node preview/server.mjs",
+    "check": "bash -n Launch.command && node --check src/activity.mjs && node --check src/bridge.mjs && node --check src/companion.js && node --check preview/server.mjs"
+  }
+}

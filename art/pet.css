@@ -1,0 +1,77 @@
+#codex-workshop { position:fixed; z-index:35; height:117px; display:flex;
+  align-items:flex-end; justify-content:flex-start; pointer-events:none;
+  font:600 10px ui-monospace,monospace; user-select:none; isolation:isolate; }
+#codex-workshop[data-overflow] { overflow-x:auto; pointer-events:auto; scrollbar-width:thin; }
+#codex-workshop[hidden] { display:none; }
+#codex-workshop .workshop-pet { position:relative; display:flex; flex:1 0 0;
+  flex-direction:column; align-items:center; justify-content:flex-end; gap:0;
+  min-width:64px; max-width:148px; height:117px; padding:0; border:0;
+  color:inherit; background:none; font:inherit; cursor:pointer; pointer-events:auto; }
+#codex-workshop .workshop-pet:disabled { cursor:default; pointer-events:none; }
+#codex-workshop .workshop-pet:focus-visible { outline:2px solid #a38aee; border-radius:14px; }
+#codex-workshop .workshop-pet:hover .readout { border-color:#c7b8ff; }
+#codex-workshop .workshop-pet svg { display:block; width:100%; height:94px; overflow:visible;
+  filter:drop-shadow(0 3px 4px #21184a38) hue-rotate(var(--pet-hue,0deg)); }
+#codex-workshop .pet-number { position:absolute; right:9%; bottom:20px;
+  border-radius:9px; min-width:15px; line-height:15px; padding:0 3px;
+  color:#fff; background:#544182; text-align:center; }
+#codex-workshop .pet-number[hidden] { display:none; }
+#codex-workshop .readout { display:flex; gap:6px; align-items:center; margin:0 auto;
+  width:max-content; padding:3px 8px; color:#f6f1ff; background:#292142;
+  border:1px solid #8d78c5; border-radius:12px; letter-spacing:.06em; }
+#codex-workshop .readout b { width:5px; height:5px; border-radius:50%; background:#cbb9f7; }
+#codex-workshop .pet-body { transform-origin:74px 62px; }
+#codex-workshop .tail { transform-origin:48px 60px; animation:workshop-tail 2.3s ease-in-out infinite; }
+#codex-workshop .paw { transform-box:fill-box; transform-origin:center top; }
+#codex-workshop .effort, #codex-workshop .rest-face, #codex-workshop .relief,
+#codex-workshop .thinking { opacity:0; }
+#codex-workshop .workshop-pet[data-state="idle"] .pet-body { animation:workshop-breathe 2.6s ease-in-out infinite; }
+#codex-workshop .workshop-pet[data-state="idle"] .normal-face { animation:workshop-blink 4.8s infinite; transform-origin:73px 46px; }
+#codex-workshop .workshop-pet[data-state="thinking"] .thinking { opacity:1; animation:workshop-hover 1.6s ease-in-out infinite; }
+#codex-workshop .workshop-pet[data-state="thinking"] .readout b { background:#ffd383; }
+#codex-workshop .workshop-pet[data-state="coding"] .pet-body { transform:translate(3px,4px) rotate(9deg);
+  animation:workshop-hustle .25s ease-in-out infinite; }
+#codex-workshop .workshop-pet[data-state="coding"] .normal-face,
+#codex-workshop .workshop-pet[data-state="done"] .normal-face { opacity:0; }
+#codex-workshop .workshop-pet[data-state="coding"] .effort,
+#codex-workshop .workshop-pet[data-state="done"] .rest-face { opacity:1; }
+#codex-workshop .workshop-pet[data-state="coding"] .paw { animation:workshop-whack .22s ease-in-out infinite; }
+#codex-workshop .workshop-pet[data-state="coding"] .paw.right { animation-delay:-.11s; }
+#codex-workshop .workshop-pet[data-state="coding"] .tail { animation-duration:.26s; }
+#codex-workshop .workshop-pet[data-state="coding"] .keyboard { animation:workshop-keys .11s ease-in-out infinite;
+  transform-origin:76px 77px; }
+#codex-workshop .workshop-pet[data-state="coding"] .sweat { animation:workshop-sweat .52s ease-out infinite; }
+#codex-workshop .workshop-pet[data-state="coding"] .speed-lines { animation:workshop-dash .22s steps(2,end) infinite; }
+#codex-workshop .workshop-pet[data-state="coding"] .key-sparks { animation:workshop-dash .22s steps(2,end) infinite reverse; }
+#codex-workshop .workshop-pet[data-state="coding"] .readout { color:#d9ffc1; border-color:#a4ce88; }
+#codex-workshop .workshop-pet[data-state="coding"] .readout b { background:#b9ff8a; box-shadow:0 0 7px #b9ff8a; }
+#codex-workshop .workshop-pet[data-state="done"] .pet-body { animation:workshop-sigh .7s ease-out both; }
+#codex-workshop .workshop-pet[data-state="done"] .relief { animation:workshop-relief 1.3s ease-out both; }
+#codex-workshop .workshop-pet[data-state="done"] .readout b { background:#b9ff8a; }
+@keyframes workshop-breathe { 50% { transform:translateY(1px) scale(1.025,.97); } }
+@keyframes workshop-blink { 0%,92%,98%,100% { transform:scaleY(1); } 95% { transform:scaleY(.12); } }
+@keyframes workshop-hover { 50% { transform:translateY(-3px); } }
+@keyframes workshop-tail { 0%,100% { transform:rotate(-8deg); } 50% { transform:rotate(13deg); } }
+@keyframes workshop-hustle { 50% { transform:translate(4px,6px) rotate(12deg) scale(1.02,.97); } }
+@keyframes workshop-whack {
+  0%,100% { transform:translateY(3px) scale(1.14,.84); }
+  55% { transform:translateY(-11px) rotate(-15deg); }
+}
+@keyframes workshop-keys { 50% { transform:translateY(1px) rotate(-1deg); } }
+@keyframes workshop-sweat {
+  0% { transform:translate(-3px,5px); opacity:0; }
+  24% { opacity:1; }
+  100% { transform:translate(9px,-6px); opacity:0; }
+}
+@keyframes workshop-dash { 50% { opacity:.25; transform:translateX(-2px); } }
+@keyframes workshop-sigh {
+  0% { transform:translate(3px,5px) rotate(9deg); }
+  45% { transform:translateY(-5px) rotate(-7deg); }
+  75% { transform:translateY(1px) scale(1.04,.93); }
+}
+@keyframes workshop-relief {
+  0% { opacity:0; transform:translate(-4px,6px); }
+  32%,64% { opacity:1; }
+  100% { opacity:0; transform:translate(5px,-9px); }
+}
+@media(prefers-reduced-motion:reduce) { #codex-workshop * { animation:none!important; } }
