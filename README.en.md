@@ -10,6 +10,8 @@ So I put a row of tiny workstations above the composer. As soon as Codex gets to
 
 The width of the composer determines how many pets fit. New tasks go to the leftmost free pet, and extra tasks are skipped when all slots are busy. Each working pet shares a colored shape with its chat. Hover over the pet to highlight its chat in the sidebar, or click it to jump there.
 
+Pets type faster on tasks running in Fast mode.
+
 ## Use it in Codex
 
 You need macOS, the ChatGPT desktop app installed in Applications, and Node.js 22 or later. Open or create a local chat in Codex, then run:

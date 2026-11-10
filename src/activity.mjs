@@ -19,7 +19,9 @@ function consume(chat, { type, payload, timestamp }) {
   chat.updated = time;
   if (type !== "event_msg") return;
 
-  if (payload.type === "task_started") {
+  if (payload.type === "thread_settings_applied") {
+    chat.fast = payload.thread_settings?.service_tier === "priority";
+  } else if (payload.type === "task_started") {
     chat.started = time;
     chat.running = true;
     chat.finished = 0;
@@ -135,8 +137,8 @@ export async function trackActivity(sessions) {
       for (const [id, chat] of chats) {
         if (!chat.desktop || renderedAt - chat.updated > activeTimeout) continue;
         const state = chat.running ? "coding" : renderedAt < chat.finished + doneDuration ? "done" : null;
-        if (state) active.push({ id, state, title: titles.get(id) || "Codex " + id.slice(-5),
-          started: chat.started ?? chat.updated });
+        if (state) active.push({ id, state, fast: chat.fast === true,
+          title: titles.get(id) || "Codex " + id.slice(-5), started: chat.started ?? chat.updated });
       }
       active.sort((left, right) => left.started - right.started || left.id.localeCompare(right.id));
       return active;

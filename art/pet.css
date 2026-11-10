@@ -34,14 +34,20 @@
   animation:workshop-hustle .31s ease-in-out infinite; }
 #codex-workshop .workshop-pet[data-state="coding"] .effort,
 #codex-workshop .workshop-pet[data-state="done"] .rest-face { opacity:1; }
-#codex-workshop .workshop-pet[data-state="coding"] .paw { animation:workshop-whack .28s linear infinite; }
-#codex-workshop .workshop-pet[data-state="coding"] .paw.right { animation-delay:-.14s; }
+#codex-workshop .workshop-pet[data-state="coding"] { --workshop-typing-period:.28s; }
+#codex-workshop .workshop-pet[data-state="coding"][data-fast] { --workshop-typing-period:.17s; }
+#codex-workshop .workshop-pet[data-state="coding"] .paw {
+  animation:workshop-whack var(--workshop-typing-period) linear infinite; }
+#codex-workshop .workshop-pet[data-state="coding"] .paw.right {
+  animation-delay:calc(var(--workshop-typing-period) / -2); }
 #codex-workshop .workshop-pet[data-state="coding"] .tail { animation-duration:.31s; }
 #codex-workshop .workshop-pet[data-state="coding"] .keyboard {
-  animation:workshop-keys .14s ease-out infinite; transform-origin:76px 77px; }
+  animation:workshop-keys calc(var(--workshop-typing-period) / 2) ease-out infinite;
+  transform-origin:76px 77px; }
 #codex-workshop .workshop-pet[data-state="coding"] .sweat { animation:workshop-sweat .61s ease-out infinite; }
 #codex-workshop .workshop-pet[data-state="coding"] .speed-lines { animation:workshop-dash .28s steps(2,end) infinite; }
-#codex-workshop .workshop-pet[data-state="coding"] .key-sparks { animation:workshop-dash .28s steps(2,end) infinite reverse; }
+#codex-workshop .workshop-pet[data-state="coding"] .key-sparks {
+  animation:workshop-dash var(--workshop-typing-period) steps(2,end) infinite reverse; }
 #codex-workshop .workshop-pet[data-state="coding"] .spiral-eye {
   transform-box:fill-box; transform-origin:center; animation:workshop-spin .52s linear infinite; }
 #codex-workshop .workshop-pet[data-state="coding"] .spiral-eye.other { animation-direction:reverse; }

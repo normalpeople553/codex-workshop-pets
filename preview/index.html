@@ -24,7 +24,7 @@
     <button type="button" data-preview="idle" aria-pressed="true">全员待机</button>
     <button type="button" data-preview="coding" aria-pressed="false">来一个任务</button>
     <button type="button" data-preview="done" aria-pressed="false">任务完成</button>
-    <button type="button" data-preview="queue" aria-pressed="false">来两个任务</button>
+    <button type="button" data-preview="queue" aria-pressed="false">普通与快速对比</button>
   </nav>
   <div class="sample-chats" aria-label="示例聊天">
     <div data-app-action-sidebar-thread-row data-app-action-sidebar-thread-id="local:preview-0"><span data-thread-title>示例聊天 A</span></div>
@@ -40,7 +40,8 @@
     if (state === "done") window.codexWorkshop.render([first]);
     const states = state === "queue" ? ["coding", "coding"] : state === "idle" ? [] : [state];
     window.codexWorkshop.render(states.map((value, index) => ({
-      id: `preview-${index}`, title: `示例任务 ${index + 1}`, state: value
+      id: `preview-${index}`, title: `示例任务 ${index + 1}`, state: value,
+      fast: state === "queue" && index === 1
     })));
   }
   for (const button of buttons) {

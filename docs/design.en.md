@@ -28,6 +28,6 @@ Change `fill` and `stroke` to recolor the SVG. When several pets appear above th
 
 ## Make the effort visible
 
-Start with the forward lean and alternating paws. Check that you can read the motion even at a small size. Then line up the keyboard shake with the moment the paws hit, and add the sweat and speed lines last. The default `workshop-whack` loop lasts about 0.28 seconds, with the right paw half a beat behind. Slow it down to check the contact points, then bring the pace back up. Give the finish a distinct pose, such as stopping suddenly, leaning back, and breathing out with eyes closed.
+Start with the forward lean and alternating paws. Check that you can read the motion even at a small size. Then line up the keyboard shake with the moment the paws hit, and add the sweat and speed lines last. The `workshop-whack` loop lasts 0.28 seconds at normal speed and 0.17 seconds in Fast mode. The right paw stays half a beat behind in both modes. Adjust `--workshop-typing-period` in `pet.css` to tune the timing. Give the finish a distinct pose, such as stopping suddenly, leaning back, and breathing out with eyes closed.
 
 Run `npm run preview` to check the idle, working, and finished animations and how the pets look side by side. Then send a real task in Codex Desktop to check when the pet starts hammering the keys and when it settles down. The SVG and CSS are local assets. Use artwork you created or have permission to distribute.

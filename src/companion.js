@@ -145,6 +145,7 @@ function mountWorkshopPets(css, artwork) {
       slot.item = current.get(slot.key) ?? null;
       const state = slot.item?.state ?? "idle";
       if (slot.pet.dataset.state !== state) slot.pet.dataset.state = state;
+      slot.pet.toggleAttribute("data-fast", state === "coding" && slot.item.fast === true);
       slot.pet.disabled = slot.item === null;
       if (slot.item) slot.pet.setAttribute("aria-label", `打开 ${slot.item.title}`);
       else slot.pet.removeAttribute("aria-label");
