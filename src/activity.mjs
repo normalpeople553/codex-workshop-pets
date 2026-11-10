@@ -1,63 +1,80 @@
 import { watch } from "node:fs";
 import { open, readdir, readFile, stat } from "node:fs/promises";
-import { basename, dirname, join } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 
 export const threadPattern = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i;
-const rolloutPattern = /^rollout-[^_]+-([0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})\.jsonl$/i;
+const rolloutPattern = /^rollout-.+\.jsonl$/;
 const activeTimeout = 15 * 60_000;
 const doneDuration = 10_000;
 
-function consume(chat, { type, payload, timestamp }) {
+function consume(reader, chats, { type, payload, timestamp }) {
   if (!payload) return;
   if (type === "session_meta") {
-    chat.desktop = payload.originator === "Codex Desktop" && payload.thread_source !== "subagent";
+    reader.chat = undefined;
+    if (payload.originator !== "Codex Desktop" || payload.thread_source === "subagent" ||
+        !threadPattern.test(payload.id)) return;
+    if (!chats.has(payload.id)) chats.set(payload.id, { updated: 0, settingsAt: 0, lifecycleAt: 0 });
+    reader.chat = chats.get(payload.id);
     return;
   }
-  if (!chat.desktop) return;
+  const chat = reader.chat;
+  if (!chat) return;
   const time = Date.parse(timestamp);
   if (!Number.isFinite(time)) return;
-  chat.updated = time;
+  chat.updated = Math.max(chat.updated, time);
   if (type !== "event_msg") return;
 
   if (payload.type === "thread_settings_applied") {
-    chat.fast = payload.thread_settings?.service_tier === "priority";
-  } else if (payload.type === "task_started") {
+    if (time >= chat.settingsAt) {
+      chat.settingsAt = time;
+      chat.fast = payload.thread_settings?.service_tier === "priority";
+    }
+    return;
+  }
+  // Resumed chats can append to more than one rollout file.
+  if (time < chat.lifecycleAt) return;
+  if (payload.type === "task_started") {
+    chat.lifecycleAt = time;
     chat.started = time;
     chat.running = true;
     chat.finished = 0;
   } else if (payload.type === "task_complete" || payload.type === "turn_aborted") {
+    chat.lifecycleAt = time;
     chat.running = false;
     chat.finished = payload.type === "task_complete" ? time : 0;
   }
 }
 
-async function tail(file, chat) {
+async function tail(file, reader, chats) {
   const handle = await open(file, "r");
   try {
     const { size } = await handle.stat();
-    if (size < chat.offset) {
-      chat.offset = 0;
-      chat.partial = "";
-      chat.decoder = new TextDecoder();
+    if (size < reader.offset) {
+      reader.offset = 0;
+      reader.partial = "";
+      reader.decoder = new TextDecoder();
+      reader.chat = undefined;
     }
-    const length = Math.min(size - chat.offset, 512 * 1024);
+    const length = Math.min(size - reader.offset, 512 * 1024);
     if (length <= 0) return false;
     const buffer = Buffer.alloc(length);
-    const { bytesRead } = await handle.read(buffer, 0, length, chat.offset);
-    chat.offset += bytesRead;
-    const lines = (chat.partial + chat.decoder.decode(buffer.subarray(0, bytesRead), { stream: true })).split("\n");
-    chat.partial = lines.pop();
+    const { bytesRead } = await handle.read(buffer, 0, length, reader.offset);
+    reader.offset += bytesRead;
+    const lines = (reader.partial + reader.decoder.decode(buffer.subarray(0, bytesRead), { stream: true })).split("\n");
+    reader.partial = lines.pop();
     for (const line of lines) {
-      if (line) consume(chat, JSON.parse(line));
+      if (line) consume(reader, chats, JSON.parse(line));
     }
-    return chat.offset < size;
+    return reader.offset < size;
   } finally {
     await handle.close();
   }
 }
 
 export async function trackActivity(sessions) {
+  sessions = resolve(sessions);
   const chats = new Map();
+  const readers = new Map();
   const dirty = new Set();
   const index = join(dirname(sessions), "session_index.jsonl");
   let titleVersion;
@@ -70,20 +87,16 @@ export async function trackActivity(sessions) {
   const watcher = watch(sessions, { recursive: true }, (_event, file) => mark(file));
   watcher.on("error", error => console.error("Session watcher:", error.message));
 
-  // Discover recently active chats. The watcher also covers chats created before this date range.
+  // The date in a rollout path is its creation date, even after a chat resumes.
   async function scanRecent() {
-    for (const day of [new Date(), new Date(Date.now() - 86_400_000)]) {
-      const relative = day.toLocaleDateString("sv-SE").replaceAll("-", "/");
-      const directory = join(sessions, relative);
-      const files = await readdir(directory).catch(error => {
-        if (error.code !== "ENOENT") throw error;
-        return [];
-      });
-      for (const file of files.filter(file => rolloutPattern.test(file))) {
-        const info = await stat(join(directory, file)).catch(() => null);
-        if (info && Date.now() - info.mtimeMs < activeTimeout) mark(join(relative, file));
-      }
-    }
+    const cutoff = Date.now() - activeTimeout;
+    const entries = await readdir(sessions, { recursive: true, withFileTypes: true });
+    const rollouts = entries.filter(entry => entry.isFile() && rolloutPattern.test(entry.name));
+    await Promise.all(rollouts.map(async entry => {
+      const file = join(entry.parentPath, entry.name);
+      const info = await stat(file).catch(() => null);
+      if (info && info.mtimeMs >= cutoff && info.size !== readers.get(file)?.offset) dirty.add(file);
+    }));
   }
 
   async function refreshTitles() {
@@ -112,21 +125,19 @@ export async function trackActivity(sessions) {
       }
       if (now >= nextCatchUp) {
         nextCatchUp = now + 400;
-        for (const chat of chats.values()) {
-          if (chat.running) dirty.add(chat.file);
+        for (const [file, reader] of readers) {
+          if (reader.chat?.running) dirty.add(file);
         }
       }
       for (const file of [...dirty]) {
         dirty.delete(file);
-        const [, id] = basename(file).match(rolloutPattern);
-        let chat = chats.get(id);
-        if (!chat || chat.file !== file) {
-          chat = { file, offset: 0, partial: "", decoder: new TextDecoder(),
-            finished: 0 };
-          chats.set(id, chat);
+        let reader = readers.get(file);
+        if (!reader) {
+          reader = { offset: 0, partial: "", decoder: new TextDecoder() };
+          readers.set(file, reader);
         }
         try {
-          if (await tail(file, chat)) dirty.add(file);
+          if (await tail(file, reader, chats)) dirty.add(file);
         } catch (error) {
           if (error.code !== "ENOENT") console.error("Session read:", error.message);
         }
@@ -135,7 +146,7 @@ export async function trackActivity(sessions) {
       const renderedAt = Date.now();
       const active = [];
       for (const [id, chat] of chats) {
-        if (!chat.desktop || renderedAt - chat.updated > activeTimeout) continue;
+        if (renderedAt - chat.updated > activeTimeout) continue;
         const state = chat.running ? "coding" : renderedAt < chat.finished + doneDuration ? "done" : null;
         if (state) active.push({ id, state, fast: chat.fast === true,
           title: titles.get(id) || "Codex " + id.slice(-5), started: chat.started ?? chat.updated });
