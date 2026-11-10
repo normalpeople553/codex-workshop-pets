@@ -1,6 +1,6 @@
 import { watch } from "node:fs";
 import { open, readdir, readFile, stat } from "node:fs/promises";
-import { basename, dirname, join, resolve } from "node:path";
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 
 export const threadPattern = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i;
 const rolloutPattern = /^rollout-.+\.jsonl$/;
@@ -15,6 +15,7 @@ function consume(reader, chats, { type, payload, timestamp }) {
         !threadPattern.test(payload.id)) return;
     if (!chats.has(payload.id)) chats.set(payload.id, { updated: 0, settingsAt: 0, lifecycleAt: 0 });
     reader.chat = chats.get(payload.id);
+    if (typeof payload.cwd === "string") reader.chat.cwd = payload.cwd;
     return;
   }
   const chat = reader.chat;
@@ -77,7 +78,12 @@ export async function trackActivity(sessions) {
   const readers = new Map();
   const dirty = new Set();
   const index = join(dirname(sessions), "session_index.jsonl");
+  const desktopState = join(dirname(sessions), ".codex-global-state.json");
   let titleVersion;
+  let projectVersion;
+  let projectAssignments = {};
+  let projectless = new Set();
+  let projectRoots = [];
   let nextCatchUp = 0;
   let nextScan = 0;
   const titles = new Map();
@@ -116,12 +122,40 @@ export async function trackActivity(sessions) {
     }
   }
 
+  async function refreshProjects() {
+    const version = await stat(desktopState).then(info => info.mtimeMs).catch(() => null);
+    if (version === projectVersion) return;
+    try {
+      const state = version === null ? {} : JSON.parse(await readFile(desktopState, "utf8"));
+      projectAssignments = state["thread-project-assignments"] ?? {};
+      projectless = new Set(state["projectless-thread-ids"] ?? []);
+      projectRoots = Object.entries(state["local-projects"] ?? {}).flatMap(([id, project]) =>
+        (project.rootPaths ?? []).filter(path => typeof path === "string" && isAbsolute(path))
+          .map(path => ({ id, path: resolve(path) }))
+      ).sort((left, right) => right.path.length - left.path.length);
+      projectVersion = version;
+    } catch (error) {
+      if (!(error instanceof SyntaxError) && error.code !== "ENOENT") throw error;
+    }
+  }
+
+  function findProject(id, cwd) {
+    const assignment = projectAssignments[id];
+    if (assignment) return assignment.projectKind === "local" ? assignment.projectId : undefined;
+    if (projectless.has(id) || !cwd || !isAbsolute(cwd)) return undefined;
+    const match = projectRoots.find(({ path }) => {
+      const fromRoot = relative(path, cwd);
+      return !isAbsolute(fromRoot) && fromRoot !== ".." && !fromRoot.startsWith(`..${sep}`);
+    });
+    return match?.id;
+  }
+
   return {
     async read() {
       const now = Date.now();
       if (now >= nextScan) {
         nextScan = now + 2000;
-        await scanRecent();
+        await Promise.all([scanRecent(), refreshProjects()]);
       }
       if (now >= nextCatchUp) {
         nextCatchUp = now + 400;
@@ -149,7 +183,8 @@ export async function trackActivity(sessions) {
         if (renderedAt - chat.updated > activeTimeout) continue;
         const state = chat.running ? "coding" : renderedAt < chat.finished + doneDuration ? "done" : null;
         if (state) active.push({ id, state, fast: chat.fast === true,
-          title: titles.get(id) || "Codex " + id.slice(-5), started: chat.started ?? chat.updated });
+          title: titles.get(id) || "Codex " + id.slice(-5), started: chat.started ?? chat.updated,
+          projectId: findProject(id, chat.cwd) });
       }
       active.sort((left, right) => left.started - right.started || left.id.localeCompare(right.id));
       return active;

@@ -15,6 +15,10 @@
 #codex-workshop .workshop-pet:disabled .workshop-pet-mark { display:none; }
 [data-workshop-mark]::before { content:""; inset-inline-start:7px; top:calc(50% - 5px); }
 [data-workshop-mark] [data-thread-title] { margin-inline-start:14px; }
+.workshop-project-marks { display:inline-flex; align-items:center; gap:4px;
+  flex:none; margin-inline-end:6px; pointer-events:none; }
+.workshop-project-mark { display:block; width:9px; height:9px;
+  background:var(--workshop-mark-color); clip-path:var(--workshop-mark-shape); }
 [data-workshop-highlight] {
   background-color:color-mix(in srgb, var(--workshop-mark-color) 17%, transparent);
   outline:1px solid var(--workshop-mark-color); outline-offset:-1px; }

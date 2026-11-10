@@ -24,6 +24,7 @@ function mountWorkshopPets(css, artwork) {
     "polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%)"
   ];
   const markedRows = new Map();
+  const markedProjects = new Map();
   const slotWidth = 124;
   let items = [];
   let needsReconcile = true;
@@ -37,8 +38,58 @@ function mountWorkshopPets(css, artwork) {
     row.style.removeProperty("--workshop-mark-shape");
   }
 
+  function setMarkStyle(element, slot) {
+    element.style.setProperty("--workshop-mark-color", slot.color);
+    element.style.setProperty("--workshop-mark-shape", slot.shape);
+  }
+
+  function clearProject(row, badges) {
+    badges.remove();
+    row.removeAttribute("data-workshop-highlight");
+    row.style.removeProperty("--workshop-mark-color");
+  }
+
+  function syncProjects(projects, highlighted) {
+    const seen = new Set();
+    if (projects.size) {
+      for (const row of document.querySelectorAll("[data-app-action-sidebar-project-row][data-app-action-sidebar-project-id]")) {
+        const group = projects.get(row.getAttribute("data-app-action-sidebar-project-id"));
+        if (!group) continue;
+        seen.add(row);
+        let mark = markedProjects.get(row);
+        if (!mark?.badges.isConnected) {
+          const badges = document.createElement("span");
+          badges.className = "workshop-project-marks";
+          badges.setAttribute("aria-hidden", "true");
+          row.insertBefore(badges, row.children[1] ?? null);
+          mark = { badges, group: [] };
+          markedProjects.set(row, mark);
+        }
+        if (mark.group.length !== group.length || mark.group.some((slot, i) => slot !== group[i])) {
+          mark.badges.replaceChildren(...group.map(slot => {
+            const chip = document.createElement("span");
+            chip.className = "workshop-project-mark";
+            setMarkStyle(chip, slot);
+            return chip;
+          }));
+          mark.group = group;
+        }
+        const isHighlighted = group.includes(highlighted);
+        row.toggleAttribute("data-workshop-highlight", isHighlighted);
+        if (isHighlighted) row.style.setProperty("--workshop-mark-color", highlighted.color);
+        else row.style.removeProperty("--workshop-mark-color");
+      }
+    }
+    for (const [row, { badges }] of markedProjects) {
+      if (seen.has(row)) continue;
+      clearProject(row, badges);
+      markedProjects.delete(row);
+    }
+  }
+
   function syncSidebar() {
     const assigned = new Map();
+    const visibleMembership = new Map();
     if (!panel.hidden) {
       for (const slot of slots) {
         if (slot.item) assigned.set(`local:${slot.item.id}`, slot);
@@ -50,11 +101,13 @@ function mountWorkshopPets(css, artwork) {
       for (const row of document.querySelectorAll("[data-app-action-sidebar-thread-row][data-app-action-sidebar-thread-id]")) {
         const slot = assigned.get(row.getAttribute("data-app-action-sidebar-thread-id"));
         if (!slot) continue;
+        const projectId = row.closest("[data-app-action-sidebar-project-list-id]")
+          ?.getAttribute("data-app-action-sidebar-project-list-id");
+        if (projectId) visibleMembership.set(slot, projectId);
         seen.add(row);
         if (markedRows.get(row) !== slot) {
           row.setAttribute("data-workshop-mark", "");
-          row.style.setProperty("--workshop-mark-color", slot.color);
-          row.style.setProperty("--workshop-mark-shape", slot.shape);
+          setMarkStyle(row, slot);
           markedRows.set(row, slot);
         }
         row.toggleAttribute("data-workshop-highlight", highlighted === slot);
@@ -65,6 +118,14 @@ function mountWorkshopPets(css, artwork) {
       clearRow(row);
       markedRows.delete(row);
     }
+    const projects = new Map();
+    for (const slot of assigned.values()) {
+      const projectId = visibleMembership.get(slot) ?? slot.item.projectId;
+      if (!projectId) continue;
+      if (!projects.has(projectId)) projects.set(projectId, []);
+      projects.get(projectId).push(slot);
+    }
+    syncProjects(projects, highlighted);
   }
 
   function makeSlot(rank) {
@@ -97,9 +158,8 @@ function mountWorkshopPets(css, artwork) {
     const shape = shapes[rank % shapes.length];
     pet.style.setProperty("--pet-hue", `${hues[rank % hues.length]}deg`);
     pet.style.setProperty("--pet-delay", `${-0.38 * (rank % 6)}s`);
-    pet.style.setProperty("--workshop-mark-color", color);
-    pet.style.setProperty("--workshop-mark-shape", shape);
     const slot = { pet, color, shape, key: null, item: null };
+    setMarkStyle(pet, slot);
     pet.addEventListener("click", () => {
       if (slot.item) clicks.push(slot.item.id);
     });
@@ -194,6 +254,7 @@ function mountWorkshopPets(css, artwork) {
     destroy() {
       clearInterval(positionTimer);
       for (const row of markedRows.keys()) clearRow(row);
+      for (const [row, { badges }] of markedProjects) clearProject(row, badges);
       panel.remove();
       style.remove();
       delete window.codexWorkshop;

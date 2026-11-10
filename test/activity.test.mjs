@@ -29,16 +29,24 @@ test("tracks old and resumed chats from different projects in one row", async t 
   const event = (type, time, extra) => entry("event_msg", { type, ...extra }, time);
   const oldRollout = join(older, `rollout-2024-01-01T00-00-00-${second}.jsonl`);
   const resumedRollout = join(newer, `rollout-2024-02-01T00-00-00-${second}_${segment}.jsonl`);
+  await writeFile(join(root, ".codex-global-state.json"), JSON.stringify({
+    "local-projects": {
+      parent: { rootPaths: ["/project-a"] },
+      alpha: { rootPaths: ["/project-a/src"] },
+      beta: { rootPaths: ["/moved-project-b"] }
+    },
+    "thread-project-assignments": { [second]: { projectKind: "local", projectId: "beta" } }
+  }));
 
   await writeFile(join(newer, `rollout-2024-02-01T00-00-00-${first}.jsonl`),
-    meta(first, "/project-a") + event("task_started", now - 1000));
+    meta(first, "/project-a/src/nested") + event("task_started", now - 1000));
   await writeFile(oldRollout, meta(second, "/project-b") + event("task_complete", now - 2000));
   await writeFile(resumedRollout, meta(second, "/project-b") +
     event("thread_settings_applied", now - 600, { thread_settings: { service_tier: "priority" } }) +
     event("task_started", now - 500));
 
-  const bothWorking = [[first, "coding", false], [second, "coding", true]];
-  const readStates = async () => (await activity.read()).map(({ id, state, fast }) => [id, state, fast]);
+  const bothWorking = [[first, "coding", false, "alpha"], [second, "coding", true, "beta"]];
+  const readStates = async () => (await activity.read()).map(({ id, state, fast, projectId }) => [id, state, fast, projectId]);
   assert.deepEqual(await readStates(), bothWorking);
 
   await appendFile(oldRollout,
@@ -49,5 +57,5 @@ test("tracks old and resumed chats from different projects in one row", async t 
 
   await appendFile(resumedRollout, event("task_complete", Date.now()));
   await delay(450);
-  assert.deepEqual(await readStates(), [[first, "coding", false], [second, "done", true]]);
+  assert.deepEqual(await readStates(), [[first, "coding", false, "alpha"], [second, "done", true, "beta"]]);
 });

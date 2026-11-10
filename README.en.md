@@ -8,7 +8,7 @@ So I put a row of tiny workstations above the composer. As soon as Codex gets to
 
 ![Pets pick up tasks from left to right and settle back into place when finished](media/pet-preview.gif)
 
-The width of the composer determines how many pets fit. Tasks from all local projects share the same row. New tasks go to the leftmost free pet, and extra tasks are skipped when all slots are busy. Each working pet shares a colored shape with its chat. Hover over the pet to highlight its chat in the sidebar, or click it to jump there.
+The width of the composer determines how many pets fit. Tasks from all local projects share the same row. New tasks go to the leftmost free pet, and extra tasks are skipped when all slots are busy. Each working pet shares a colored shape with its chat and project heading. The heading keeps the marker when the project is collapsed. Hover over a pet to highlight its project and chat in the sidebar, or click it to jump to the chat.
 
 Pets type faster on tasks running in Fast mode.
 
