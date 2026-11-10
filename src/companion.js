@@ -15,9 +15,57 @@ function mountWorkshopPets(css, artwork) {
   const skipped = new Set();
   const clicks = [];
   const hues = [0, 45, -48, 105, -100, 170];
+  const colors = ["#8458e0", "#c749b3", "#3986ce", "#cf624c", "#2f977b", "#9c7626"];
+  const shapes = [
+    "polygon(50% 0,100% 50%,50% 100%,0 50%)",
+    "circle(48%)",
+    "polygon(50% 0,100% 100%,0 100%)",
+    "inset(5% round 10%)",
+    "polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%)"
+  ];
+  const markedRows = new Map();
   const slotWidth = 124;
   let items = [];
   let needsReconcile = true;
+  let pointedSlot;
+  let focusedSlot;
+
+  function clearRow(row) {
+    row.removeAttribute("data-workshop-mark");
+    row.removeAttribute("data-workshop-highlight");
+    row.style.removeProperty("--workshop-mark-color");
+    row.style.removeProperty("--workshop-mark-shape");
+  }
+
+  function syncSidebar() {
+    const assigned = new Map();
+    if (!panel.hidden) {
+      for (const slot of slots) {
+        if (slot.item) assigned.set(`local:${slot.item.id}`, slot);
+      }
+    }
+    const highlighted = pointedSlot ?? focusedSlot;
+    const seen = new Set();
+    if (assigned.size) {
+      for (const row of document.querySelectorAll("[data-app-action-sidebar-thread-row][data-app-action-sidebar-thread-id]")) {
+        const slot = assigned.get(row.getAttribute("data-app-action-sidebar-thread-id"));
+        if (!slot) continue;
+        seen.add(row);
+        if (markedRows.get(row) !== slot) {
+          row.setAttribute("data-workshop-mark", "");
+          row.style.setProperty("--workshop-mark-color", slot.color);
+          row.style.setProperty("--workshop-mark-shape", slot.shape);
+          markedRows.set(row, slot);
+        }
+        row.toggleAttribute("data-workshop-highlight", highlighted === slot);
+      }
+    }
+    for (const row of markedRows.keys()) {
+      if (seen.has(row)) continue;
+      clearRow(row);
+      markedRows.delete(row);
+    }
+  }
 
   function makeSlot(rank) {
     const pet = document.createElement("button");
@@ -41,14 +89,26 @@ function mountWorkshopPets(css, artwork) {
       }
     }
     pet.querySelector("svg").setAttribute("aria-hidden", "true");
+    const mark = document.createElement("span");
+    mark.className = "workshop-pet-mark";
+    mark.setAttribute("aria-hidden", "true");
+    pet.append(mark);
+    const color = colors[rank % colors.length];
+    const shape = shapes[rank % shapes.length];
     pet.style.setProperty("--pet-hue", `${hues[rank % hues.length]}deg`);
     pet.style.setProperty("--pet-delay", `${-0.38 * (rank % 6)}s`);
-    const slot = { pet, key: null, item: null };
+    pet.style.setProperty("--workshop-mark-color", color);
+    pet.style.setProperty("--workshop-mark-shape", shape);
+    const slot = { pet, color, shape, key: null, item: null };
     pet.addEventListener("click", () => {
       if (slot.item) clicks.push(slot.item.id);
     });
-    // Index zero is the rightmost slot. A resize only adds or removes slots on the left.
-    panel.prepend(pet);
+    pet.addEventListener("pointerenter", () => { pointedSlot = slot; syncSidebar(); });
+    pet.addEventListener("pointerleave", () => { pointedSlot = undefined; syncSidebar(); });
+    pet.addEventListener("focus", () => { focusedSlot = slot; syncSidebar(); });
+    pet.addEventListener("blur", () => { focusedSlot = undefined; syncSidebar(); });
+    // Keep slot zero at the left edge when the composer changes width.
+    panel.append(pet);
     return slot;
   }
 
@@ -60,6 +120,8 @@ function mountWorkshopPets(css, artwork) {
     while (slots.length > capacity) {
       const slot = slots.pop();
       if (current.has(slot.key)) skipped.add(slot.key);
+      if (pointedSlot === slot) pointedSlot = undefined;
+      if (focusedSlot === slot) focusedSlot = undefined;
       slot.pet.remove();
     }
     while (slots.length < capacity) slots.push(makeSlot(slots.length));
@@ -95,6 +157,7 @@ function mountWorkshopPets(css, artwork) {
     )].find(element => element.getBoundingClientRect().width >= slotWidth);
     if (!composer) {
       panel.hidden = true;
+      syncSidebar();
       return false;
     }
     const box = composer.getBoundingClientRect();
@@ -102,7 +165,10 @@ function mountWorkshopPets(css, artwork) {
     const width = Math.max(0, Math.min(box.right, innerWidth - 8) - left);
     const capacity = Math.floor(width / slotWidth);
     panel.hidden = capacity === 0;
-    if (panel.hidden) return false;
+    if (panel.hidden) {
+      syncSidebar();
+      return false;
+    }
     panel.style.left = `${left}px`;
     panel.style.width = `${width}px`;
     panel.style.top = `${Math.max(10, box.top - 94)}px`;
@@ -110,6 +176,7 @@ function mountWorkshopPets(css, artwork) {
       reconcile(capacity);
       needsReconcile = false;
     }
+    syncSidebar();
     return true;
   }
 
@@ -125,6 +192,7 @@ function mountWorkshopPets(css, artwork) {
     takeClicks: () => clicks.splice(0),
     destroy() {
       clearInterval(positionTimer);
+      for (const row of markedRows.keys()) clearRow(row);
       panel.remove();
       style.remove();
       delete window.codexWorkshop;

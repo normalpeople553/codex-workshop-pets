@@ -1,13 +1,23 @@
 #codex-workshop { position:fixed; z-index:35; height:94px; display:flex;
   align-items:flex-end; pointer-events:none; isolation:isolate; }
 #codex-workshop[hidden] { display:none; }
-#codex-workshop .workshop-pet { display:flex; flex:1 1 0; min-width:0; height:94px;
+#codex-workshop .workshop-pet { position:relative; display:flex; flex:1 1 0; min-width:0; height:94px;
   align-items:flex-end; justify-content:center; padding:0; border:0;
   background:none; cursor:pointer; pointer-events:auto; }
 #codex-workshop .workshop-pet:disabled { pointer-events:none; cursor:default; }
 #codex-workshop .workshop-pet:focus-visible { outline:2px solid #a38aee; border-radius:14px; }
 #codex-workshop .workshop-pet svg { display:block; width:min(100%,148px); height:94px;
   overflow:visible; filter:drop-shadow(0 3px 4px #21184a38) hue-rotate(var(--pet-hue,0deg)); }
+#codex-workshop .workshop-pet-mark, [data-workshop-mark]::before {
+  position:absolute; width:10px; height:10px; background:var(--workshop-mark-color);
+  clip-path:var(--workshop-mark-shape); pointer-events:none; }
+#codex-workshop .workshop-pet-mark { inset-inline-start:calc(50% - 51px); top:16px; }
+#codex-workshop .workshop-pet:disabled .workshop-pet-mark { display:none; }
+[data-workshop-mark]::before { content:""; inset-inline-start:7px; top:calc(50% - 5px); }
+[data-workshop-mark] [data-thread-title] { margin-inline-start:14px; }
+[data-workshop-highlight] {
+  background-color:color-mix(in srgb, var(--workshop-mark-color) 17%, transparent);
+  outline:1px solid var(--workshop-mark-color); outline-offset:-1px; }
 #codex-workshop .pet-body { transform-origin:74px 62px; }
 #codex-workshop .tail { transform-origin:48px 60px; animation:workshop-tail 2.3s ease-in-out infinite; }
 #codex-workshop .paw { transform-box:fill-box; transform-origin:center top; }

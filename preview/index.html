@@ -12,18 +12,24 @@
   nav { display:flex; gap:8px; flex-wrap:wrap }
   nav button { border:1px solid #c1acd9; border-radius:100px; padding:7px 13px; background:#fff; cursor:pointer }
   nav button[aria-pressed="true"] { background:#503484; color:#fff }
+  .sample-chats { display:flex; gap:10px; margin-top:14px; }
+  .sample-chats > div { position:relative; padding:4px 10px; border-radius:7px; }
   .composer-surface-chrome { margin-top:136px; padding:20px; min-height:110px; border-radius:20px;
     background:#fff; border:1px solid #ddcdea; color:#6e6181; }
 </style>
 <main>
   <h1>给宠物试个动作</h1>
-  <p>给宠物派个活儿，看看最右边的空闲宠物怎么接单。修改 SVG 或 CSS 后刷新页面，即可预览新形象。</p>
+  <p>给宠物派个活儿，看看最左边的空闲宠物怎么接单。悬停宠物可高亮对应聊天。</p>
   <nav aria-label="动画预览">
     <button type="button" data-preview="idle" aria-pressed="true">全员待机</button>
     <button type="button" data-preview="coding" aria-pressed="false">来一个任务</button>
     <button type="button" data-preview="done" aria-pressed="false">任务完成</button>
     <button type="button" data-preview="queue" aria-pressed="false">来两个任务</button>
   </nav>
+  <div class="sample-chats" aria-label="示例聊天">
+    <div data-app-action-sidebar-thread-row data-app-action-sidebar-thread-id="local:preview-0"><span data-thread-title>示例聊天 A</span></div>
+    <div data-app-action-sidebar-thread-row data-app-action-sidebar-thread-id="local:preview-1"><span data-thread-title>示例聊天 B</span></div>
+  </div>
   <div class="composer-surface-chrome" aria-label="模拟 Codex 输入框">Codex 输入框的位置预览</div>
 </main>
 <script src="/pet.js"></script>
