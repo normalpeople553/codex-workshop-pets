@@ -26,12 +26,18 @@ You can also double-click `Launch.command` in Finder. When the launcher asks you
 
 Run `./Launch.command --stop` to stop the pet bridge. To exit demo mode, quit ChatGPT with **⌘Q**, then reopen it from the Dock.
 
+### Restore pets when you log in to your Mac
+
+Run `./Launch.command --enable-login` to turn this on. The next time you log in, the launcher opens ChatGPT with the pets without opening Terminal. If macOS already restored a regular ChatGPT window, the launcher asks before reopening it. For unattended startup, deselect “Reopen windows when logging back in” when you restart your Mac.
+
+Run `./Launch.command --disable-login` to turn this off. The login launcher runs a copy from `~/Library/Application Support/Codex Workshop Pets`. After updating the repository or customizing the artwork, run `--enable-login` again to use the changes on your next login.
+
 ## Design your own pet
 
 1. Open [art/pet.svg](art/pet.svg) and draw your character’s body, expressions, paws, and props. Figma, Inkscape, or a text editor will work.
 2. Adjust motion, timing, and colors in [art/pet.css](art/pet.css). Keep the SVG animation class names so the existing animations can find the right parts of your artwork.
 3. Run `npm run preview` and open the local address printed in Terminal. Try the idle, working, and finished states, or start two sample tasks together. Refresh the page after editing the artwork.
-4. If the desktop demo is running, saving the SVG or CSS updates the pets without restarting the app.
+4. Save the SVG or CSS that the running launcher uses to update the pets without restarting the app. Manual launch uses the files in the repository. Login startup uses the copy described above.
 
 [Design and animate a pet from scratch](docs/design.en.md)
 

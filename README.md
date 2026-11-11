@@ -26,12 +26,18 @@ cd codex-workshop-pets
 
 运行 `./Launch.command --stop` 可以停止宠物桥接。要结束演示模式，按 **⌘Q** 退出 ChatGPT，再从 Dock 正常打开。
 
+### 登录 Mac 时自动恢复宠物
+
+运行 `./Launch.command --enable-login` 开启。下次登录 Mac 时，启动器会在后台打开 ChatGPT 并恢复宠物，无需打开终端。如果 macOS 已经恢复了普通 ChatGPT 窗口，启动器会先询问你是否要重开。想直接自动恢复，可以在重启时取消勾选「再次登录时重新打开窗口」。
+
+运行 `./Launch.command --disable-login` 关闭自启。自启使用存放在 `~/Library/Application Support/Codex Workshop Pets` 的副本。更新仓库或修改自定义素材后，再运行一次 `--enable-login`，下次登录就会使用更新后的版本。
+
 ## 设计你自己的宠物
 
 1. 打开 [art/pet.svg](art/pet.svg)，画出角色身体、表情、爪子和道具。可以用 Figma、Inkscape 或任意文本编辑器。
 2. 在 [art/pet.css](art/pet.css) 调动作、节奏和配色。保留 SVG 里的动作类名，现有动画就会作用到你的新图形。
 3. 运行 `npm run preview`，打开终端给出的本地地址。页面可以预览待机、接活、完成，以及两个任务同时开始。改完素材刷新页面即可。
-4. 如果桌面演示已经开着，保存 SVG 或 CSS 就会热更新，聊天可以继续开着。
+4. 保存正在运行的那份 SVG 或 CSS 就会热更新，聊天可以继续开着。手动启动用的是仓库里的文件，登录自启用的是上面的副本。
 
 [从空白图形做到会干活的小宠物](docs/design.md)
 
