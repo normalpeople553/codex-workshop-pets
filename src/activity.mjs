@@ -7,6 +7,41 @@ const rolloutPattern = /^rollout-.+\.jsonl$/;
 const activeTimeout = 15 * 60_000;
 const doneDuration = 10_000;
 
+function readClientBindings(atoms) {
+  const bindings = new Map();
+  for (const [alias, id] of Object.entries(atoms["client-thread-bindings-v1"] ?? {})) {
+    if (typeof id === "string" && threadPattern.test(id)) bindings.set(alias, id);
+  }
+  for (const [key, alias] of Object.entries(atoms)) {
+    const id = key.match(/^thread-client-id-v1:local(?:%3A|:)(.+)$/i)?.[1];
+    if (threadPattern.test(id) && typeof alias === "string" && !bindings.has(alias)) {
+      bindings.set(alias, id);
+    }
+  }
+  return bindings;
+}
+
+function readThreadAliases(state) {
+  const bindings = new Map();
+  for (const [key, atoms] of Object.entries(state)) {
+    if (!key.startsWith("electron-owner-atoms:") || !atoms) continue;
+    for (const [alias, id] of readClientBindings(atoms)) {
+      // A shared sidebar ID cannot safely identify two different chats.
+      bindings.set(alias, bindings.has(alias) && bindings.get(alias) !== id ? null : id);
+    }
+  }
+  for (const [alias, id] of readClientBindings(state["electron-persisted-atom-state"] ?? {})) {
+    if (!bindings.has(alias)) bindings.set(alias, id);
+  }
+  const aliases = new Map();
+  for (const [alias, id] of bindings) {
+    if (id === null) continue;
+    if (!aliases.has(id)) aliases.set(id, []);
+    aliases.get(id).push(alias);
+  }
+  return aliases;
+}
+
 function consume(reader, chats, { type, payload, timestamp }) {
   if (!payload) return;
   if (type === "session_meta") {
@@ -149,20 +184,7 @@ export async function trackActivity(sessions) {
         (project.rootPaths ?? []).filter(path => typeof path === "string" && isAbsolute(path))
           .map(path => ({ id, path: resolve(path) }))
       ).sort((left, right) => right.path.length - left.path.length);
-      const atoms = state["electron-persisted-atom-state"] ?? {};
-      const bindings = new Map(Object.entries(atoms["client-thread-bindings-v1"] ?? {}));
-      for (const [key, alias] of Object.entries(atoms)) {
-        const id = key.match(/^thread-client-id-v1:local(?:%3A|:)(.+)$/i)?.[1];
-        if (threadPattern.test(id) && typeof alias === "string" && !bindings.has(alias)) {
-          bindings.set(alias, id);
-        }
-      }
-      threadAliases = new Map();
-      for (const [alias, id] of bindings) {
-        if (typeof id !== "string" || !threadPattern.test(id)) continue;
-        if (!threadAliases.has(id)) threadAliases.set(id, []);
-        threadAliases.get(id).push(alias);
-      }
+      threadAliases = readThreadAliases(state);
       desktopVersion = version;
     } catch (error) {
       if (!(error instanceof SyntaxError) && error.code !== "ENOENT") throw error;

@@ -24,6 +24,8 @@ test("tracks old and resumed chats from different projects in one row", async t 
   const segment = "33333333-3333-3333-3333-333333333333";
   const alias = "client-new-thread:44444444-4444-4444-4444-444444444444";
   const reverseAlias = "client-new-thread:55555555-5555-5555-5555-555555555555";
+  const legacyAlias = "client-new-thread:66666666-6666-6666-6666-666666666666";
+  const ambiguousAlias = "client-new-thread:77777777-7777-7777-7777-777777777777";
   const now = Date.now();
   const entry = (type, payload, time) =>
     JSON.stringify({ type, payload, timestamp: new Date(time).toISOString() }) + "\n";
@@ -38,10 +40,16 @@ test("tracks old and resumed chats from different projects in one row", async t 
       beta: { rootPaths: ["/moved-project-b"] }
     },
     "thread-project-assignments": { [second]: { projectKind: "local", projectId: "beta" } },
-    "electron-persisted-atom-state": {
-      "client-thread-bindings-v1": { [alias]: second },
-      [`thread-client-id-v1:local%3A${first}`]: reverseAlias,
+    "electron-owner-atoms:account-one": {
+      "client-thread-bindings-v1": { [alias]: second, [ambiguousAlias]: first },
       [`thread-client-id-v1:local%3A${segment}`]: alias
+    },
+    "electron-owner-atoms:account-two": {
+      "client-thread-bindings-v1": { [ambiguousAlias]: second },
+      [`thread-client-id-v1:local%3A${first}`]: reverseAlias,
+    },
+    "electron-persisted-atom-state": {
+      "client-thread-bindings-v1": { [alias]: first, [legacyAlias]: second, [ambiguousAlias]: first }
     }
   }));
 
@@ -56,7 +64,7 @@ test("tracks old and resumed chats from different projects in one row", async t 
   const bothWorking = [[first, "coding", false, "alpha"], [second, "coding", true, "beta"]];
   const readStates = async () => (await activity.read()).map(({ id, state, fast, projectId }) => [id, state, fast, projectId]);
   assert.deepEqual(await readStates(), bothWorking);
-  assert.deepEqual((await activity.read()).find(item => item.id === second).aliases, [alias]);
+  assert.deepEqual((await activity.read()).find(item => item.id === second).aliases, [alias, legacyAlias]);
   assert.deepEqual((await activity.read()).find(item => item.id === first).aliases, [reverseAlias]);
 
   await appendFile(oldRollout,

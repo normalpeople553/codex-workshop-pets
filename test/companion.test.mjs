@@ -31,6 +31,7 @@ test("chat aliases, collapsed projects, navigation and composer switching", {
     <div data-app-action-sidebar-project-list-id="alpha">
       <div id="direct" data-app-action-sidebar-thread-row data-app-action-sidebar-thread-id="local:existing">Existing</div>
       <div id="alias" data-app-action-sidebar-thread-row data-app-action-sidebar-thread-id="local:client-new-thread:pending">Alias</div>
+      <div id="other-alias" data-app-action-sidebar-thread-row data-app-action-sidebar-thread-id="local:client-new-thread:other">Other alias</div>
     </div>
     <pre id="proof"></pre>
     <script>${source}</script>
@@ -40,34 +41,40 @@ test("chat aliases, collapsed projects, navigation and composer switching", {
       try {
         const tasks = [
           {id:"existing",title:"Same title",state:"coding",projectId:"alpha"},
-          {id:"canonical",title:"Same title",state:"coding",fast:true,projectId:"alpha",aliases:["client-new-thread:pending"]}
+          {id:"canonical",title:"Same title",state:"coding",fast:true,projectId:"alpha",aliases:["client-new-thread:pending"]},
+          {id:"other",title:"Same title",state:"coding",projectId:"alpha",aliases:["client-new-thread:other"]}
         ];
         const project = document.getElementById("project");
         const alias = document.getElementById("alias");
+        const otherAlias = document.getElementById("other-alias");
         const direct = document.getElementById("direct");
         const workshop = window.codexWorkshop;
         workshop.render(tasks);
         const panel = document.getElementById("codex-workshop");
         const pets = panel.querySelectorAll(".workshop-pet");
         check(panel.style.left === "100px", "The hidden composer won");
-        check(direct.hasAttribute("data-workshop-mark") && alias.hasAttribute("data-workshop-mark"), "Missing task marker");
-        const mark = getComputedStyle(pets[1].querySelector(".workshop-pet-mark"));
-        const rowMark = getComputedStyle(alias, "::before");
-        check(rowMark.backgroundColor === mark.backgroundColor && rowMark.clipPath === mark.clipPath, "Alias marker differs");
+        [direct, alias, otherAlias].forEach((row, i) => {
+          check(row.hasAttribute("data-workshop-mark"), "Missing task marker");
+          const petMark = getComputedStyle(pets[i].querySelector(".workshop-pet-mark"));
+          const rowMark = getComputedStyle(row, "::before");
+          check(rowMark.backgroundColor === petMark.backgroundColor && rowMark.clipPath === petMark.clipPath, "Task marker differs");
+        });
         check(pets[1].hasAttribute("data-fast"), "Fast state was lost");
         pets[1].dispatchEvent(new PointerEvent("pointerenter"));
-        check(alias.hasAttribute("data-workshop-highlight") && !direct.hasAttribute("data-workshop-highlight"), "Highlight matched by title");
+        check(alias.hasAttribute("data-workshop-highlight") && !direct.hasAttribute("data-workshop-highlight") &&
+          !otherAlias.hasAttribute("data-workshop-highlight"), "Highlight matched by title");
         pets[1].dispatchEvent(new PointerEvent("pointerleave"));
         pets[1].click();
         check(workshop.takeClicks().join() === "canonical", "Click used a client alias");
         direct.remove();
         alias.remove();
+        otherAlias.remove();
         project.setAttribute("aria-expanded","false");
         document.getElementById("active").setAttribute("aria-hidden","true");
         document.getElementById("inactive").removeAttribute("aria-hidden");
         workshop.render(tasks);
         check(panel.style.left === "20px", "Overlay did not move with the active composer");
-        check(project.querySelectorAll(".workshop-project-mark").length === 2, "Collapsed project lost its markers");
+        check(project.querySelectorAll(".workshop-project-mark").length === 3, "Collapsed project lost its markers");
         workshop.render([]);
         check(!project.querySelector(".workshop-project-marks"), "Stale project markers");
         proof.dataset.passed = "true";
