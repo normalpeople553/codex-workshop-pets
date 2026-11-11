@@ -13,6 +13,7 @@ if (!profile || !sessions) {
 const openApp = promisify(execFile);
 const activity = await trackActivity(sessions);
 const clients = new Map();
+const connectionErrors = new Map();
 const debuggerTimeout = 45_000;
 let debuggerSeenAt = Date.now();
 let stopping = false;
@@ -53,11 +54,13 @@ async function discover() {
   if (!Array.isArray(targets)) throw new Error("Invalid Codex window list");
   debuggerSeenAt = Date.now();
   const pages = targets.filter(target => {
-    if (target.type !== "page" || !target.webSocketDebuggerUrl) return false;
+    if (target.type !== "page" || !target.webSocketDebuggerUrl || !URL.canParse(target.url)) return false;
     const url = new URL(target.url);
     if (url.protocol !== "app:" || url.hostname !== "-") return false;
     if (url.pathname === "/detached-window.html") return true;
-    return url.pathname === "/index.html" && !url.searchParams.has("initialRoute");
+    if (url.pathname !== "/index.html") return false;
+    const route = url.searchParams.get("initialRoute");
+    return !route || route === "/local" || /^\/local\/[^/?#]+$/.test(route);
   });
   const ids = new Set(pages.map(page => page.id));
   for (const [id, client] of clients) {
@@ -65,9 +68,18 @@ async function discover() {
     client.socket.close();
     clients.delete(id);
   }
-  for (const page of pages) {
-    if (!clients.has(page.id)) clients.set(page.id, await connect(page, port));
+  for (const id of connectionErrors.keys()) {
+    if (!ids.has(id)) connectionErrors.delete(id);
   }
+  await Promise.all(pages.filter(page => !clients.has(page.id)).map(async page => {
+    try {
+      clients.set(page.id, await connect(page, port));
+      connectionErrors.delete(page.id);
+    } catch (error) {
+      if (connectionErrors.get(page.id) !== error.message) console.error(error.message);
+      connectionErrors.set(page.id, error.message);
+    }
+  }));
 }
 
 async function evaluate(client, expression) {

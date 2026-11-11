@@ -217,15 +217,24 @@ function mountWorkshopPets(css, artwork) {
   }
 
   function place() {
-    const composer = [...document.querySelectorAll(
+    let box;
+    for (const element of document.querySelectorAll(
       '.composer-surface-chrome, [data-testid="composer"], [class*="ComposerLayoutRoot-"]'
-    )].find(element => element.getBoundingClientRect().width >= slotWidth);
-    if (!composer) {
+    )) {
+      if (element.closest('[hidden], [aria-hidden="true"], [inert]') ||
+          !element.checkVisibility({ visibilityProperty: true, opacityProperty: true })) continue;
+      const rect = element.getBoundingClientRect();
+      if (rect.width >= slotWidth && rect.height > 0 && rect.bottom > 0 && rect.top < innerHeight &&
+          rect.right > 0 && rect.left < innerWidth) {
+        box = rect;
+        break;
+      }
+    }
+    if (!box) {
       panel.hidden = true;
       syncSidebar();
       return false;
     }
-    const box = composer.getBoundingClientRect();
     const left = Math.max(8, box.left);
     const width = Math.max(0, Math.min(box.right, innerWidth - 8) - left);
     const capacity = Math.floor(width / slotWidth);

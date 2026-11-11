@@ -23,6 +23,7 @@ test("tracks old and resumed chats from different projects in one row", async t 
   const second = "22222222-2222-2222-2222-222222222222";
   const segment = "33333333-3333-3333-3333-333333333333";
   const alias = "client-new-thread:44444444-4444-4444-4444-444444444444";
+  const reverseAlias = "client-new-thread:55555555-5555-5555-5555-555555555555";
   const now = Date.now();
   const entry = (type, payload, time) =>
     JSON.stringify({ type, payload, timestamp: new Date(time).toISOString() }) + "\n";
@@ -37,7 +38,11 @@ test("tracks old and resumed chats from different projects in one row", async t 
       beta: { rootPaths: ["/moved-project-b"] }
     },
     "thread-project-assignments": { [second]: { projectKind: "local", projectId: "beta" } },
-    "electron-persisted-atom-state": { "client-thread-bindings-v1": { [alias]: second } }
+    "electron-persisted-atom-state": {
+      "client-thread-bindings-v1": { [alias]: second },
+      [`thread-client-id-v1:local%3A${first}`]: reverseAlias,
+      [`thread-client-id-v1:local%3A${segment}`]: alias
+    }
   }));
 
   await writeFile(join(newer, `rollout-2024-02-01T00-00-00-${first}.jsonl`),
@@ -45,20 +50,22 @@ test("tracks old and resumed chats from different projects in one row", async t 
   await writeFile(oldRollout, meta(second, "/project-b") + event("task_complete", now - 2000));
   await writeFile(resumedRollout, meta(second, "/project-b") +
     event("thread_settings_applied", now - 600, { thread_settings: { service_tier: "priority" } }) +
-    event("task_started", now - 500));
+    "{invalid rollout line}\n" +
+    event("task_started", now - 500, { turn_id: "current-turn" }));
 
   const bothWorking = [[first, "coding", false, "alpha"], [second, "coding", true, "beta"]];
   const readStates = async () => (await activity.read()).map(({ id, state, fast, projectId }) => [id, state, fast, projectId]);
   assert.deepEqual(await readStates(), bothWorking);
   assert.deepEqual((await activity.read()).find(item => item.id === second).aliases, [alias]);
+  assert.deepEqual((await activity.read()).find(item => item.id === first).aliases, [reverseAlias]);
 
   await appendFile(oldRollout,
     event("thread_settings_applied", now - 900, { thread_settings: { service_tier: "default" } }) +
-    event("task_complete", now - 700));
+    event("task_complete", Date.now(), { turn_id: "previous-turn", started_at: Math.floor(now / 1000) - 30 }));
   await delay(450);
   assert.deepEqual(await readStates(), bothWorking);
 
-  await appendFile(resumedRollout, event("task_complete", Date.now()));
+  await appendFile(resumedRollout, event("task_complete", Date.now(), { turn_id: "current-turn" }));
   await delay(450);
   assert.deepEqual(await readStates(), [[first, "coding", false, "alpha"], [second, "done", true, "beta"]]);
 });

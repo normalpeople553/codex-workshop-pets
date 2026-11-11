@@ -37,9 +37,16 @@ function consume(reader, chats, { type, payload, timestamp }) {
   if (payload.type === "task_started") {
     chat.lifecycleAt = time;
     chat.started = time;
+    chat.turnId = payload.turn_id;
     chat.running = true;
     chat.finished = 0;
   } else if (payload.type === "task_complete" || payload.type === "turn_aborted") {
+    if (chat.turnId && payload.turn_id && chat.turnId !== payload.turn_id) {
+      const otherStarted = typeof payload.started_at === "number" ? payload.started_at * 1000 : 0;
+      if (otherStarted <= chat.started) return;
+      chat.started = otherStarted;
+      chat.turnId = payload.turn_id;
+    }
     chat.lifecycleAt = time;
     chat.running = false;
     chat.finished = payload.type === "task_complete" ? time : 0;
@@ -64,7 +71,15 @@ async function tail(file, reader, chats) {
     const lines = (reader.partial + reader.decoder.decode(buffer.subarray(0, bytesRead), { stream: true })).split("\n");
     reader.partial = lines.pop();
     for (const line of lines) {
-      if (line) consume(reader, chats, JSON.parse(line));
+      if (!line) continue;
+      let event;
+      try {
+        event = JSON.parse(line);
+      } catch {
+        // Skip a damaged line and keep reading the rest of this chunk.
+        continue;
+      }
+      if (event) consume(reader, chats, event);
     }
     return reader.offset < size;
   } finally {
@@ -134,9 +149,16 @@ export async function trackActivity(sessions) {
         (project.rootPaths ?? []).filter(path => typeof path === "string" && isAbsolute(path))
           .map(path => ({ id, path: resolve(path) }))
       ).sort((left, right) => right.path.length - left.path.length);
-      const bindings = state["electron-persisted-atom-state"]?.["client-thread-bindings-v1"] ?? {};
+      const atoms = state["electron-persisted-atom-state"] ?? {};
+      const bindings = new Map(Object.entries(atoms["client-thread-bindings-v1"] ?? {}));
+      for (const [key, alias] of Object.entries(atoms)) {
+        const id = key.match(/^thread-client-id-v1:local(?:%3A|:)(.+)$/i)?.[1];
+        if (threadPattern.test(id) && typeof alias === "string" && !bindings.has(alias)) {
+          bindings.set(alias, id);
+        }
+      }
       threadAliases = new Map();
-      for (const [alias, id] of Object.entries(bindings)) {
+      for (const [alias, id] of bindings) {
         if (typeof id !== "string" || !threadPattern.test(id)) continue;
         if (!threadAliases.has(id)) threadAliases.set(id, []);
         threadAliases.get(id).push(alias);
