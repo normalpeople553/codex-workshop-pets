@@ -22,6 +22,7 @@ test("tracks old and resumed chats from different projects in one row", async t 
   const first = "11111111-1111-1111-1111-111111111111";
   const second = "22222222-2222-2222-2222-222222222222";
   const segment = "33333333-3333-3333-3333-333333333333";
+  const alias = "client-new-thread:44444444-4444-4444-4444-444444444444";
   const now = Date.now();
   const entry = (type, payload, time) =>
     JSON.stringify({ type, payload, timestamp: new Date(time).toISOString() }) + "\n";
@@ -35,7 +36,8 @@ test("tracks old and resumed chats from different projects in one row", async t 
       alpha: { rootPaths: ["/project-a/src"] },
       beta: { rootPaths: ["/moved-project-b"] }
     },
-    "thread-project-assignments": { [second]: { projectKind: "local", projectId: "beta" } }
+    "thread-project-assignments": { [second]: { projectKind: "local", projectId: "beta" } },
+    "electron-persisted-atom-state": { "client-thread-bindings-v1": { [alias]: second } }
   }));
 
   await writeFile(join(newer, `rollout-2024-02-01T00-00-00-${first}.jsonl`),
@@ -48,6 +50,7 @@ test("tracks old and resumed chats from different projects in one row", async t 
   const bothWorking = [[first, "coding", false, "alpha"], [second, "coding", true, "beta"]];
   const readStates = async () => (await activity.read()).map(({ id, state, fast, projectId }) => [id, state, fast, projectId]);
   assert.deepEqual(await readStates(), bothWorking);
+  assert.deepEqual((await activity.read()).find(item => item.id === second).aliases, [alias]);
 
   await appendFile(oldRollout,
     event("thread_settings_applied", now - 900, { thread_settings: { service_tier: "default" } }) +

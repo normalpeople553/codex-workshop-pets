@@ -89,17 +89,21 @@ function mountWorkshopPets(css, artwork) {
 
   function syncSidebar() {
     const assigned = new Map();
+    const aliases = new Map();
     const visibleMembership = new Map();
     if (!panel.hidden) {
       for (const slot of slots) {
-        if (slot.item) assigned.set(`local:${slot.item.id}`, slot);
+        if (!slot.item) continue;
+        assigned.set(`local:${slot.item.id}`, slot);
+        for (const alias of slot.item.aliases ?? []) aliases.set(`local:${alias}`, slot);
       }
     }
     const highlighted = pointedSlot ?? focusedSlot;
     const seen = new Set();
     if (assigned.size) {
       for (const row of document.querySelectorAll("[data-app-action-sidebar-thread-row][data-app-action-sidebar-thread-id]")) {
-        const slot = assigned.get(row.getAttribute("data-app-action-sidebar-thread-id"));
+        const rowId = row.getAttribute("data-app-action-sidebar-thread-id");
+        const slot = assigned.get(rowId) ?? aliases.get(rowId);
         if (!slot) continue;
         const projectId = row.closest("[data-app-action-sidebar-project-list-id]")
           ?.getAttribute("data-app-action-sidebar-project-list-id");

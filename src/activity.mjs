@@ -80,10 +80,11 @@ export async function trackActivity(sessions) {
   const index = join(dirname(sessions), "session_index.jsonl");
   const desktopState = join(dirname(sessions), ".codex-global-state.json");
   let titleVersion;
-  let projectVersion;
+  let desktopVersion;
   let projectAssignments = {};
   let projectless = new Set();
   let projectRoots = [];
+  let threadAliases = new Map();
   let nextCatchUp = 0;
   let nextScan = 0;
   const titles = new Map();
@@ -122,9 +123,9 @@ export async function trackActivity(sessions) {
     }
   }
 
-  async function refreshProjects() {
+  async function refreshDesktopState() {
     const version = await stat(desktopState).then(info => info.mtimeMs).catch(() => null);
-    if (version === projectVersion) return;
+    if (version === desktopVersion) return;
     try {
       const state = version === null ? {} : JSON.parse(await readFile(desktopState, "utf8"));
       projectAssignments = state["thread-project-assignments"] ?? {};
@@ -133,7 +134,14 @@ export async function trackActivity(sessions) {
         (project.rootPaths ?? []).filter(path => typeof path === "string" && isAbsolute(path))
           .map(path => ({ id, path: resolve(path) }))
       ).sort((left, right) => right.path.length - left.path.length);
-      projectVersion = version;
+      const bindings = state["electron-persisted-atom-state"]?.["client-thread-bindings-v1"] ?? {};
+      threadAliases = new Map();
+      for (const [alias, id] of Object.entries(bindings)) {
+        if (typeof id !== "string" || !threadPattern.test(id)) continue;
+        if (!threadAliases.has(id)) threadAliases.set(id, []);
+        threadAliases.get(id).push(alias);
+      }
+      desktopVersion = version;
     } catch (error) {
       if (!(error instanceof SyntaxError) && error.code !== "ENOENT") throw error;
     }
@@ -155,7 +163,7 @@ export async function trackActivity(sessions) {
       const now = Date.now();
       if (now >= nextScan) {
         nextScan = now + 2000;
-        await Promise.all([scanRecent(), refreshProjects()]);
+        await Promise.all([scanRecent(), refreshDesktopState()]);
       }
       if (now >= nextCatchUp) {
         nextCatchUp = now + 400;
@@ -184,7 +192,7 @@ export async function trackActivity(sessions) {
         const state = chat.running ? "coding" : renderedAt < chat.finished + doneDuration ? "done" : null;
         if (state) active.push({ id, state, fast: chat.fast === true,
           title: titles.get(id) || "Codex " + id.slice(-5), started: chat.started ?? chat.updated,
-          projectId: findProject(id, chat.cwd) });
+          projectId: findProject(id, chat.cwd), aliases: threadAliases.get(id) });
       }
       active.sort((left, right) => left.started - right.started || left.id.localeCompare(right.id));
       return active;
