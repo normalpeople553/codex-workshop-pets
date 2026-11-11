@@ -22,9 +22,9 @@ cd codex-workshop-pets
 ./Launch.command
 ```
 
-You can also double-click `Launch.command` in Finder. When the launcher asks you to quit ChatGPT, switch to the app and press **⌘Q**. The launcher reopens it. Return to any local Codex chat and leave the launcher’s Terminal window open. Send Codex a task to see a pet start working. Start tasks in two local chats to see the two leftmost pets work independently.
+You can also double-click `Launch.command` in Finder. When the launcher asks you to quit ChatGPT, switch to the app and press **⌘Q**. The launcher reopens it. Once the bridge starts in the background, you can close the Terminal window. Send a task in any local Codex chat to see a pet start working. Start tasks in two local chats to see the two leftmost pets work independently.
 
-Press **Ctrl+C** in the launcher’s Terminal window to hide the pets. To exit demo mode, quit ChatGPT with **⌘Q**, then reopen it from the Dock.
+Run `./Launch.command --stop` to stop the pet bridge. To exit demo mode, quit ChatGPT with **⌘Q**, then reopen it from the Dock.
 
 ## Design your own pet
 

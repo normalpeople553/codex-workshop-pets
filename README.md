@@ -22,9 +22,9 @@ cd codex-workshop-pets
 ./Launch.command
 ```
 
-也可以在 Finder 双击 `Launch.command`。启动器提示等待时，切回 ChatGPT 按 **⌘Q**，它会重新打开。回到任意本地 Codex 聊天，保留启动器的终端窗口。想测试动作，可以给 Codex 发一条任务。两条本地聊天同时工作时，可以看到最左边的两只各自干活。
+也可以在 Finder 双击 `Launch.command`。启动器提示等待时，切回 ChatGPT 按 **⌘Q**，它会重新打开。宠物桥接在后台运行，启动后可以关闭终端窗口。回到任意本地 Codex 聊天，发一条任务就能看到宠物开工。两条本地聊天同时工作时，可以看到最左边的两只各自干活。
 
-结束时在启动器终端按 **Ctrl+C**，宠物会消失。要结束演示模式，按 **⌘Q** 退出 ChatGPT，再从 Dock 正常打开。
+运行 `./Launch.command --stop` 可以停止宠物桥接。要结束演示模式，按 **⌘Q** 退出 ChatGPT，再从 Dock 正常打开。
 
 ## 设计你自己的宠物
 

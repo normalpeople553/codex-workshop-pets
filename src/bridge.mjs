@@ -13,6 +13,8 @@ if (!profile || !sessions) {
 const openApp = promisify(execFile);
 const activity = await trackActivity(sessions);
 const clients = new Map();
+const debuggerTimeout = 45_000;
+let debuggerSeenAt = Date.now();
 let stopping = false;
 process.on("SIGINT", () => { stopping = true; });
 process.on("SIGTERM", () => { stopping = true; });
@@ -43,9 +45,13 @@ async function discover() {
   }
   const port = Number((await readFile(join(profile, "DevToolsActivePort"), "utf8")).split("\n")[0]);
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error("Invalid debug port");
-  const targets = await (await fetch(`http://127.0.0.1:${port}/json/list`, {
+  const response = await fetch(`http://127.0.0.1:${port}/json/list`, {
     signal: AbortSignal.timeout(1000)
-  })).json();
+  });
+  if (!response.ok) throw new Error(`Codex debugger returned HTTP ${response.status}`);
+  const targets = await response.json();
+  if (!Array.isArray(targets)) throw new Error("Invalid Codex window list");
+  debuggerSeenAt = Date.now();
   const pages = targets.filter(target => {
     if (target.type !== "page" || !target.webSocketDebuggerUrl) return false;
     const url = new URL(target.url);
@@ -62,7 +68,6 @@ async function discover() {
   for (const page of pages) {
     if (!clients.has(page.id)) clients.set(page.id, await connect(page, port));
   }
-  if (!clients.size) throw new Error("Waiting for a Codex window");
 }
 
 async function evaluate(client, expression) {
@@ -105,8 +110,6 @@ async function show(client, source, items) {
   }
 }
 
-const started = Date.now();
-let connected = false;
 let discoverAfter = 0;
 let lastError;
 try {
@@ -115,7 +118,10 @@ try {
       if (Date.now() >= discoverAfter) {
         discoverAfter = Date.now() + 1500;
         await discover();
-        connected = true;
+      }
+      if (!clients.size) {
+        await delay(180);
+        continue;
       }
       const [source, items] = await Promise.all([rendererSource(), activity.read()]);
       const results = await Promise.allSettled([...clients.values()].map(client => show(client, source, items)));
@@ -125,7 +131,7 @@ try {
     } catch (error) {
       if (lastError !== error.message) console.error(error.message);
       lastError = error.message;
-      if ((!connected && Date.now() - started > 45_000) || (connected && !clients.size)) break;
+      if (Date.now() - debuggerSeenAt >= debuggerTimeout) break;
     }
     await delay(180);
   }
