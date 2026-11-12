@@ -39,7 +39,7 @@
 #codex-workshop .workshop-pet[data-state="coding"] .effort,
 #codex-workshop .workshop-pet[data-state="done"] .rest-face { opacity:1; }
 #codex-workshop .workshop-pet[data-state="coding"] { --workshop-typing-period:.28s; }
-#codex-workshop .workshop-pet[data-state="coding"][data-fast] { --workshop-typing-period:.17s; }
+#codex-workshop .workshop-pet[data-state="coding"][data-fast] { --workshop-typing-period:.10s; }
 #codex-workshop .workshop-pet[data-state="coding"] .paw {
   animation:workshop-whack var(--workshop-typing-period) linear infinite; }
 #codex-workshop .workshop-pet[data-state="coding"] .paw.right {
@@ -57,6 +57,11 @@
 #codex-workshop .workshop-pet[data-state="coding"] .spiral-eye.other { animation-direction:reverse; }
 #codex-workshop .workshop-pet[data-state="coding"] .flying-key {
   transform-box:fill-box; transform-origin:center; animation:workshop-keycap .56s ease-out infinite; }
+#codex-workshop .workshop-pet[data-state="coding"][data-fast] .paw { animation-name:workshop-fast-whack; }
+#codex-workshop .workshop-pet[data-state="coding"][data-fast] .pet-body { animation-duration:.18s; }
+#codex-workshop .workshop-pet[data-state="coding"][data-fast] .flying-key,
+#codex-workshop .workshop-pet[data-state="coding"][data-fast] .speed-lines {
+  animation-duration:calc(var(--workshop-typing-period) * 2); }
 #codex-workshop .workshop-pet[data-state="coding"] .steam { animation:workshop-steam .81s ease-out infinite; }
 #codex-workshop .workshop-pet[data-state="coding"] .alarm { animation:workshop-dash .45s ease-in-out infinite; }
 #codex-workshop .workshop-pet[data-state="done"] .pet-body { animation:workshop-sigh .7s ease-out both; }
@@ -71,6 +76,11 @@
   0%,100% { transform:translate(2px,4px) scale(1.21,.78); }
   36% { transform:translate(-2px,-12px) rotate(-23deg); }
   74% { transform:translate(2px,-6px) rotate(10deg); }
+}
+@keyframes workshop-fast-whack {
+  0%,100% { transform:translate(3px,5px) scale(1.32,.68); }
+  36% { transform:translate(-4px,-17px) rotate(-32deg); }
+  74% { transform:translate(4px,-8px) rotate(17deg); }
 }
 @keyframes workshop-keys { 42% { transform:translateY(2px) rotate(-3deg); } }
 @keyframes workshop-sweat {

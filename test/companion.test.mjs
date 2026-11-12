@@ -60,6 +60,13 @@ test("chat aliases, collapsed projects, navigation and composer switching", {
           check(rowMark.backgroundColor === petMark.backgroundColor && rowMark.clipPath === petMark.clipPath, "Task marker differs");
         });
         check(pets[1].hasAttribute("data-fast"), "Fast state was lost");
+        const animation = (pet, part) => getComputedStyle(pet.querySelector(part));
+        const normalPaw = animation(pets[0], ".paw.left");
+        const fastPaw = animation(pets[1], ".paw.left");
+        check(parseFloat(fastPaw.animationDuration) < parseFloat(normalPaw.animationDuration) / 2 &&
+          fastPaw.animationName !== normalPaw.animationName, "Fast paws lost their faster, wider stroke");
+        check(parseFloat(animation(pets[1], ".flying-key").animationDuration) <
+          parseFloat(animation(pets[0], ".flying-key").animationDuration), "Fast keycaps did not speed up");
         pets[1].dispatchEvent(new PointerEvent("pointerenter"));
         check(alias.hasAttribute("data-workshop-highlight") && !direct.hasAttribute("data-workshop-highlight") &&
           !otherAlias.hasAttribute("data-workshop-highlight"), "Highlight matched by title");
